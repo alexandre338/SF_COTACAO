@@ -1,0 +1,790 @@
+# Creating the TSV file exactly as provided by the user.
+tsv_content = """CodRepres\tNome\tLogin\tCod Forn\tFornecedor\tCod Marca\tMarca
+285\tAndrey Boter\tandrey.boter@hotmail.com\t3134069\tCONFORT BRASIL SP LTDA - EPP\t497\tABOVE BASTON
+285\tAndrey Boter\tandrey.boter@hotmail.com\t3134069\tCONFORT BRASIL SP LTDA - EPP\t628\tBIOTYPE
+285\tAndrey Boter\tandrey.boter@hotmail.com\t3134069\tCONFORT BRASIL SP LTDA - EPP\t112\tDIVERSOS (ATA)
+285\tAndrey Boter\tandrey.boter@hotmail.com\t3134069\tCONFORT BRASIL SP LTDA - EPP\t531\tMELHORAMENTO
+285\tAndrey Boter\tandrey.boter@hotmail.com\t3134069\tCONFORT BRASIL SP LTDA - EPP\t259\tONTEX
+285\tAndrey Boter\tandrey.boter@hotmail.com\t3134069\tCONFORT BRASIL SP LTDA - EPP\t270\tPHYTOERVAS
+285\tAndrey Boter\tandrey.boter@hotmail.com\t3134069\tCONFORT BRASIL SP LTDA - EPP\t277\tPROCTER E GAMBL
+285\tAndrey Boter\tandrey.boter@hotmail.com\t3134069\tCONFORT BRASIL SP LTDA - EPP\t406\tSALON LINE
+285\tAndrey Boter\tandrey.boter@hotmail.com\t3134069\tCONFORT BRASIL SP LTDA - EPP\t407\tSKALA
+285\tAndrey Boter\tandrey.boter@hotmail.com\t3134069\tCONFORT BRASIL SP LTDA - EPP\t341\tUNILEVER
+283\tRICARDO\tricknalini@gmail.com\t3134069\tCONFORT BRASIL SP LTDA - EPP\t628\tBIOTYPE
+283\tRICARDO\tricknalini@gmail.com\t3134069\tCONFORT BRASIL SP LTDA - EPP\t112\tDIVERSOS (ATA)
+283\tRICARDO\tricknalini@gmail.com\t3134069\tCONFORT BRASIL SP LTDA - EPP\t531\tMELHORAMENTO
+283\tRICARDO\tricknalini@gmail.com\t3134069\tCONFORT BRASIL SP LTDA - EPP\t259\tONTEX
+283\tRICARDO\tricknalini@gmail.com\t3134069\tCONFORT BRASIL SP LTDA - EPP\t270\tPHYTOERVAS
+283\tRICARDO\tricknalini@gmail.com\t3134069\tCONFORT BRASIL SP LTDA - EPP\t277\tPROCTER E GAMBL
+283\tRICARDO\tricknalini@gmail.com\t3134069\tCONFORT BRASIL SP LTDA - EPP\t406\tSALON LINE
+283\tRICARDO\tricknalini@gmail.com\t3134069\tCONFORT BRASIL SP LTDA - EPP\t407\tSKALA
+283\tRICARDO\tricknalini@gmail.com\t3134069\tCONFORT BRASIL SP LTDA - EPP\t341\tUNILEVER
+227\tKelriton\tkelriton.souza@dauriti.com.br\t3705\tDAURITI ALIMENTOS\t92\tCONVENIENCIA GERAL
+238\tNeto\tneto.ianhez@yahoo.com.br\t3712\tDESTRO\t92\tCONVENIENCIA GERAL
+238\tNeto\tneto.ianhez@yahoo.com.br\t3728\tDPC\t1\t3 M
+238\tNeto\tneto.ianhez@yahoo.com.br\t3728\tDPC\t5\tACESSORIOS (ATA)
+238\tNeto\tneto.ianhez@yahoo.com.br\t3728\tDPC\t22\tAPOLO
+224\tAdriano\trosilaine.souza@andorinhamed.com.br\t3628\tANDORINHA\t92\tCONVENIENCIA GERAL
+224\tAdriano\trosilaine.souza@andorinhamed.com.br\t3628\tANDORINHA\t140\tFINI
+224\tAdriano\trosilaine.souza@andorinhamed.com.br\t3628\tANDORINHA\t242\tNESTLE (DIR)
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t5\tACESSORIOS (ATA)
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t22\tAPOLO
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t40\tBARUEL
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t85\tCLESS
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t92\tCONVENIENCIA GERAL
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t94\tCOTY
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t95\tCREMER
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t102\tDEPI ROLL
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t411\tDEPILSAM
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t112\tDIVERSOS (ATA)
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t409\tEMBELLEZE
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t137\tFARMAX
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t164\tGRANADO
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t189\tKIMBERLY
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t201\tLILLO (DIR)
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t206\tLOREAL
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t226\tMERHEJE
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t231\tMONDELEZ
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t242\tNESTLE (DIR)
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t245\tNIELY
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t247\tNIVEA (DOT)
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t270\tPHYTOERVAS
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t284\tRECKITT HB
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t406\tSALON LINE
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t290\tSAMTEC BIOTECNOLOGIA
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t461\tSC JOHNSON
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t407\tSKALA
+225\tValdemir\tarcomararaquara@gmail.com\t3635\tARCOM\t341\tUNILEVER
+274\tBeatriz\tbeatriz@b2gdistribuicao.com.br\t557413\tB2G DISTRIBUIDORA DE DOCES E ALIMENTOS LTDA\t92\tCONVENIENCIA GERAL
+274\tBeatriz\tbeatriz@b2gdistribuicao.com.br\t557413\tB2G DISTRIBUIDORA DE DOCES E ALIMENTOS LTDA\t140\tFINI
+274\tBeatriz\tbeatriz@b2gdistribuicao.com.br\t557413\tB2G DISTRIBUIDORA DE DOCES E ALIMENTOS LTDA\t242\tNESTLE (DIR)
+226\tMauricio\tmauwillrp@gmail.com\t3655\tBELFARMA\t5\tACESSORIOS (ATA)
+226\tMauricio\tmauwillrp@gmail.com\t3655\tBELFARMA\t22\tAPOLO
+226\tMauricio\tmauwillrp@gmail.com\t3655\tBELFARMA\t40\tBARUEL
+226\tMauricio\tmauwillrp@gmail.com\t3655\tBELFARMA\t85\tCLESS
+226\tMauricio\tmauwillrp@gmail.com\t3655\tBELFARMA\t95\tCREMER
+226\tMauricio\tmauwillrp@gmail.com\t3655\tBELFARMA\t102\tDEPI ROLL
+226\tMauricio\tmauwillrp@gmail.com\t3655\tBELFARMA\t411\tDEPILSAM
+226\tMauricio\tmauwillrp@gmail.com\t3655\tBELFARMA\t112\tDIVERSOS (ATA)
+226\tMauricio\tmauwillrp@gmail.com\t3655\tBELFARMA\t402\tELETRONICOS SAUDE
+226\tMauricio\tmauwillrp@gmail.com\t3655\tBELFARMA\t409\tEMBELLEZE
+226\tMauricio\tmauwillrp@gmail.com\t3655\tBELFARMA\t137\tFARMAX
+226\tMauricio\tmauwillrp@gmail.com\t3655\tBELFARMA\t164\tGRANADO
+226\tMauricio\tmauwillrp@gmail.com\t3655\tBELFARMA\t180\tJ&J
+226\tMauricio\tmauwillrp@gmail.com\t3655\tBELFARMA\t181\tJ&J NEUTROGENA
+226\tMauricio\tmauwillrp@gmail.com\t3655\tBELFARMA\t201\tLILLO (DIR)
+226\tMauricio\tmauwillrp@gmail.com\t3655\tBELFARMA\t226\tMERHEJE
+226\tMauricio\tmauwillrp@gmail.com\t3655\tBELFARMA\t231\tMONDELEZ
+226\tMauricio\tmauwillrp@gmail.com\t3655\tBELFARMA\t389\tMULTILASER
+226\tMauricio\tmauwillrp@gmail.com\t3655\tBELFARMA\t258\tOMRON
+226\tMauricio\tmauwillrp@gmail.com\t3655\tBELFARMA\t270\tPHYTOERVAS
+226\tMauricio\tmauwillrp@gmail.com\t3655\tBELFARMA\t406\tSALON LINE
+226\tMauricio\tmauwillrp@gmail.com\t3655\tBELFARMA\t290\tSAMTEC BIOTECNOLOGIA
+226\tMauricio\tmauwillrp@gmail.com\t3655\tBELFARMA\t407\tSKALA
+235\tLucas\tchokdistribuidora.1160@gmail.com\t3722\tCHOKDOCE\t92\tCONVENIENCIA GERAL
+238\tNeto\tneto.ianhez@yahoo.com.br\t3728\tDPC\t85\tCLESS
+238\tNeto\tneto.ianhez@yahoo.com.br\t3728\tDPC\t95\tCREMER
+238\tNeto\tneto.ianhez@yahoo.com.br\t3728\tDPC\t102\tDEPI ROLL
+238\tNeto\tneto.ianhez@yahoo.com.br\t3728\tDPC\t112\tDIVERSOS (ATA)
+238\tNeto\tneto.ianhez@yahoo.com.br\t3728\tDPC\t137\tFARMAX
+238\tNeto\tneto.ianhez@yahoo.com.br\t3728\tDPC\t164\tGRANADO
+238\tNeto\tneto.ianhez@yahoo.com.br\t3728\tDPC\t180\tJ&J
+238\tNeto\tneto.ianhez@yahoo.com.br\t3728\tDPC\t181\tJ&J NEUTROGENA
+238\tNeto\tneto.ianhez@yahoo.com.br\t3728\tDPC\t189\tKIMBERLY
+238\tNeto\tneto.ianhez@yahoo.com.br\t3728\tDPC\t201\tLILLO (DIR)
+238\tNeto\tneto.ianhez@yahoo.com.br\t3728\tDPC\t226\tMERHEJE
+238\tNeto\tneto.ianhez@yahoo.com.br\t3728\tDPC\t277\tPROCTER E GAMBL
+238\tNeto\tneto.ianhez@yahoo.com.br\t3728\tDPC\t290\tSAMTEC BIOTECNOLOGIA
+280\tBRUNA\tbruna.zanardo@vendas.dimeso.com.br\t3714\tDIMESO\t5\tACESSORIOS (ATA)
+280\tBRUNA\tbruna.zanardo@vendas.dimeso.com.br\t3714\tDIMESO\t22\tAPOLO
+280\tBRUNA\tbruna.zanardo@vendas.dimeso.com.br\t3714\tDIMESO\t85\tCLESS
+280\tBRUNA\tbruna.zanardo@vendas.dimeso.com.br\t3714\tDIMESO\t95\tCREMER
+280\tBRUNA\tbruna.zanardo@vendas.dimeso.com.br\t3714\tDIMESO\t102\tDEPI ROLL
+280\tBRUNA\tbruna.zanardo@vendas.dimeso.com.br\t3714\tDIMESO\t112\tDIVERSOS (ATA)
+280\tBRUNA\tbruna.zanardo@vendas.dimeso.com.br\t3714\tDIMESO\t402\tELETRONICOS SAUDE
+280\tBRUNA\tbruna.zanardo@vendas.dimeso.com.br\t3714\tDIMESO\t137\tFARMAX
+280\tBRUNA\tbruna.zanardo@vendas.dimeso.com.br\t3714\tDIMESO\t389\tMULTILASER
+280\tBRUNA\tbruna.zanardo@vendas.dimeso.com.br\t3714\tDIMESO\t258\tOMRON
+280\tBRUNA\tbruna.zanardo@vendas.dimeso.com.br\t3714\tDIMESO\t290\tSAMTEC BIOTECNOLOGIA
+280\tBRUNA\tbruna.zanardo@vendas.dimeso.com.br\t3714\tDIMESO\t322\tTENA
+229\tGabriele\tgabriele@dimeso.com.br\t3714\tDIMESO\t5\tACESSORIOS (ATA)
+229\tGabriele\tgabriele@dimeso.com.br\t3714\tDIMESO\t22\tAPOLO
+229\tGabriele\tgabriele@dimeso.com.br\t3714\tDIMESO\t85\tCLESS
+229\tGabriele\tgabriele@dimeso.com.br\t3714\tDIMESO\t95\tCREMER
+229\tGabriele\tgabriele@dimeso.com.br\t3714\tDIMESO\t102\tDEPI ROLL
+229\tGabriele\tgabriele@dimeso.com.br\t3714\tDIMESO\t112\tDIVERSOS (ATA)
+229\tGabriele\tgabriele@dimeso.com.br\t3714\tDIMESO\t402\tELETRONICOS SAUDE
+229\tGabriele\tgabriele@dimeso.com.br\t3714\tDIMESO\t137\tFARMAX
+229\tGabriele\tgabriele@dimeso.com.br\t3714\tDIMESO\t389\tMULTILASER
+229\tGabriele\tgabriele@dimeso.com.br\t3714\tDIMESO\t258\tOMRON
+229\tGabriele\tgabriele@dimeso.com.br\t3714\tDIMESO\t290\tSAMTEC BIOTECNOLOGIA
+229\tGabriele\tgabriele@dimeso.com.br\t3714\tDIMESO\t322\tTENA
+282\tsuzana\tvendas2@disferdistribuidora.com.br\t3458497\tDISFER DISTRIBUIDORA DE PRODUTOS ALIMENTICIOS LTDA\t89\tCOLGATE
+282\tsuzana\tvendas2@disferdistribuidora.com.br\t3458497\tDISFER DISTRIBUIDORA DE PRODUTOS ALIMENTICIOS LTDA\t92\tCONVENIENCIA GERAL
+282\tsuzana\tvendas2@disferdistribuidora.com.br\t3458497\tDISFER DISTRIBUIDORA DE PRODUTOS ALIMENTICIOS LTDA\t112\tDIVERSOS (ATA)
+282\tsuzana\tvendas2@disferdistribuidora.com.br\t3458497\tDISFER DISTRIBUIDORA DE PRODUTOS ALIMENTICIOS LTDA\t231\tMONDELEZ
+230\tJean\tgv@dislab.com.br\t3716\tDISLAB\t1\t3 M
+230\tJean\tgv@dislab.com.br\t3716\tDISLAB\t22\tAPOLO
+230\tJean\tgv@dislab.com.br\t3716\tDISLAB\t85\tCLESS
+230\tJean\tgv@dislab.com.br\t3716\tDISLAB\t102\tDEPI ROLL
+230\tJean\tgv@dislab.com.br\t3716\tDISLAB\t411\tDEPILSAM
+230\tJean\tgv@dislab.com.br\t3716\tDISLAB\t112\tDIVERSOS (ATA)
+230\tJean\tgv@dislab.com.br\t3716\tDISLAB\t402\tELETRONICOS SAUDE
+230\tJean\tgv@dislab.com.br\t3716\tDISLAB\t409\tEMBELLEZE
+230\tJean\tgv@dislab.com.br\t3716\tDISLAB\t137\tFARMAX
+230\tJean\tgv@dislab.com.br\t3716\tDISLAB\t140\tFINI
+230\tJean\tgv@dislab.com.br\t3716\tDISLAB\t152\tGENOMMA LABORATORIES
+230\tJean\tgv@dislab.com.br\t3716\tDISLAB\t164\tGRANADO
+230\tJean\tgv@dislab.com.br\t3716\tDISLAB\t389\tMULTILASER
+230\tJean\tgv@dislab.com.br\t3716\tDISLAB\t258\tOMRON
+230\tJean\tgv@dislab.com.br\t3716\tDISLAB\t259\tONTEX
+230\tJean\tgv@dislab.com.br\t3716\tDISLAB\t406\tSALON LINE
+230\tJean\tgv@dislab.com.br\t3716\tDISLAB\t407\tSKALA
+231\tFRANCIELE\tgrandescontas@dismed.com.br\t3717\tDISMED\t22\tAPOLO
+231\tFRANCIELE\tgrandescontas@dismed.com.br\t3717\tDISMED\t85\tCLESS
+231\tFRANCIELE\tgrandescontas@dismed.com.br\t3717\tDISMED\t102\tDEPI ROLL
+231\tFRANCIELE\tgrandescontas@dismed.com.br\t3717\tDISMED\t112\tDIVERSOS (ATA)
+231\tFRANCIELE\tgrandescontas@dismed.com.br\t3717\tDISMED\t70\tEUROFARMA CANONNE
+231\tFRANCIELE\tgrandescontas@dismed.com.br\t3717\tDISMED\t137\tFARMAX
+231\tFRANCIELE\tgrandescontas@dismed.com.br\t3717\tDISMED\t461\tSC JOHNSON
+232\tEvandro\tevandro.trovo@dp4.com.br\t3718\tDISPAR\t497\tABOVE BASTON
+232\tEvandro\tevandro.trovo@dp4.com.br\t3718\tDISPAR\t5\tACESSORIOS (ATA)
+232\tEvandro\tevandro.trovo@dp4.com.br\t3718\tDISPAR\t22\tAPOLO
+232\tEvandro\tevandro.trovo@dp4.com.br\t3718\tDISPAR\t40\tBARUEL
+232\tEvandro\tevandro.trovo@dp4.com.br\t3718\tDISPAR\t85\tCLESS
+232\tEvandro\tevandro.trovo@dp4.com.br\t3718\tDISPAR\t94\tCOTY
+232\tEvandro\tevandro.trovo@dp4.com.br\t3718\tDISPAR\t95\tCREMER
+232\tEvandro\tevandro.trovo@dp4.com.br\t3718\tDISPAR\t102\tDEPI ROLL
+232\tEvandro\tevandro.trovo@dp4.com.br\t3718\tDISPAR\t112\tDIVERSOS (ATA)
+232\tEvandro\tevandro.trovo@dp4.com.br\t3718\tDISPAR\t402\tELETRONICOS SAUDE
+232\tEvandro\tevandro.trovo@dp4.com.br\t3718\tDISPAR\t70\tEUROFARMA CANONNE
+232\tEvandro\tevandro.trovo@dp4.com.br\t3718\tDISPAR\t137\tFARMAX
+232\tEvandro\tevandro.trovo@dp4.com.br\t3718\tDISPAR\t164\tGRANADO
+232\tEvandro\tevandro.trovo@dp4.com.br\t3718\tDISPAR\t206\tLOREAL
+232\tEvandro\tevandro.trovo@dp4.com.br\t3718\tDISPAR\t226\tMERHEJE
+232\tEvandro\tevandro.trovo@dp4.com.br\t3718\tDISPAR\t389\tMULTILASER
+232\tEvandro\tevandro.trovo@dp4.com.br\t3718\tDISPAR\t245\tNIELY
+232\tEvandro\tevandro.trovo@dp4.com.br\t3718\tDISPAR\t247\tNIVEA (DOT)
+232\tEvandro\tevandro.trovo@dp4.com.br\t3718\tDISPAR\t258\tOMRON
+232\tEvandro\tevandro.trovo@dp4.com.br\t3718\tDISPAR\t259\tONTEX
+232\tEvandro\tevandro.trovo@dp4.com.br\t3718\tDISPAR\t270\tPHYTOERVAS
+232\tEvandro\tevandro.trovo@dp4.com.br\t3718\tDISPAR\t461\tSC JOHNSON
+232\tEvandro\tevandro.trovo@dp4.com.br\t3718\tDISPAR\t322\tTENA
+238\tNeto\tneto.ianhez@yahoo.com.br\t3728\tDPC\t302\tSENSODYNE
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t5\tACESSORIOS (ATA)
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t7\tACHE EUCERIN
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t9\tACHE PROFUSE
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t22\tAPOLO
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t37\tAVENE
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t40\tBARUEL
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t54\tBIODERMA
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t385\tCERAVE
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t85\tCLESS
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t89\tCOLGATE
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t95\tCREMER
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t99\tDARROW
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t101\tDAUDT LIB
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t102\tDEPI ROLL
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t394\tDIVCOM PERFUMARIA
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t112\tDIVERSOS (ATA)
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t70\tEUROFARMA CANONNE
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t137\tFARMAX
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t140\tFINI
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t148\tGALDERMA LIB
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t152\tGENOMMA LABORATORIES
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t164\tGRANADO
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t179\tISDIN FARMA
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t180\tJ&J
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t181\tJ&J NEUTROGENA
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t189\tKIMBERLY
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t192\tLA ROCHE POSAY
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t393\tLIBBS LIBERADOS
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t206\tLOREAL
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t209\tMANTECORP SKINCARE
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t531\tMELHORAMENTO
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t245\tNIELY
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t247\tNIVEA (DOT)
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t259\tONTEX
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t277\tPROCTER E GAMBL
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t284\tRECKITT HB
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t290\tSAMTEC BIOTECNOLOGIA
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t461\tSC JOHNSON
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t302\tSENSODYNE
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t322\tTENA
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t328\tTHERASKIN DERMO
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t341\tUNILEVER
+239\tAna Carolina\tanacarolinamarini@icloud.com\t3730\tDROGACENTER\t350\tVICHY
+240\tDébora\tdebora_dyscamp@hotmail.com\t3737\tDYSC BEAUTY\t497\tABOVE BASTON
+240\tDébora\tdebora_dyscamp@hotmail.com\t3737\tDYSC BEAUTY\t5\tACESSORIOS (ATA)
+240\tDébora\tdebora_dyscamp@hotmail.com\t3737\tDYSC BEAUTY\t22\tAPOLO
+240\tDébora\tdebora_dyscamp@hotmail.com\t3737\tDYSC BEAUTY\t85\tCLESS
+240\tDébora\tdebora_dyscamp@hotmail.com\t3737\tDYSC BEAUTY\t94\tCOTY
+240\tDébora\tdebora_dyscamp@hotmail.com\t3737\tDYSC BEAUTY\t95\tCREMER
+240\tDébora\tdebora_dyscamp@hotmail.com\t3737\tDYSC BEAUTY\t102\tDEPI ROLL
+240\tDébora\tdebora_dyscamp@hotmail.com\t3737\tDYSC BEAUTY\t411\tDEPILSAM
+240\tDébora\tdebora_dyscamp@hotmail.com\t3737\tDYSC BEAUTY\t112\tDIVERSOS (ATA)
+240\tDébora\tdebora_dyscamp@hotmail.com\t3737\tDYSC BEAUTY\t409\tEMBELLEZE
+240\tDébora\tdebora_dyscamp@hotmail.com\t3737\tDYSC BEAUTY\t137\tFARMAX
+240\tDébora\tdebora_dyscamp@hotmail.com\t3737\tDYSC BEAUTY\t152\tGENOMMA LABORATORIES
+240\tDébora\tdebora_dyscamp@hotmail.com\t3737\tDYSC BEAUTY\t164\tGRANADO
+240\tDébora\tdebora_dyscamp@hotmail.com\t3737\tDYSC BEAUTY\t206\tLOREAL
+240\tDébora\tdebora_dyscamp@hotmail.com\t3737\tDYSC BEAUTY\t226\tMERHEJE
+240\tDébora\tdebora_dyscamp@hotmail.com\t3737\tDYSC BEAUTY\t245\tNIELY
+240\tDébora\tdebora_dyscamp@hotmail.com\t3737\tDYSC BEAUTY\t247\tNIVEA (DOT)
+240\tDébora\tdebora_dyscamp@hotmail.com\t3737\tDYSC BEAUTY\t270\tPHYTOERVAS
+240\tDébora\tdebora_dyscamp@hotmail.com\t3737\tDYSC BEAUTY\t406\tSALON LINE
+240\tDébora\tdebora_dyscamp@hotmail.com\t3737\tDYSC BEAUTY\t290\tSAMTEC BIOTECNOLOGIA
+240\tDébora\tdebora_dyscamp@hotmail.com\t3737\tDYSC BEAUTY\t407\tSKALA
+241\tAnderson\tandersonparavani@yahoo.com.br\t3746\tEMPORIO LGB\t92\tCONVENIENCIA GERAL
+241\tAnderson\tandersonparavani@yahoo.com.br\t3746\tEMPORIO LGB\t242\tNESTLE (DIR)
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t5\tACESSORIOS (ATA)
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t22\tAPOLO
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t40\tBARUEL
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t85\tCLESS
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t92\tCONVENIENCIA GERAL
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t94\tCOTY
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t95\tCREMER
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t102\tDEPI ROLL
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t411\tDEPILSAM
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t112\tDIVERSOS (ATA)
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t409\tEMBELLEZE
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t137\tFARMAX
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t164\tGRANADO
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t189\tKIMBERLY
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t201\tLILLO (DIR)
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t206\tLOREAL
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t226\tMERHEJE
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t231\tMONDELEZ
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t242\tNESTLE (DIR)
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t245\tNIELY
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t247\tNIVEA (DOT)
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t270\tPHYTOERVAS
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t284\tRECKITT HB
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t406\tSALON LINE
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t290\tSAMTEC BIOTECNOLOGIA
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t461\tSC JOHNSON
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t407\tSKALA
+271\tValdemir\tandrezacristinanalin@gmail.com\t647982\tFFRR DISTRIBUICAO LTDA\t341\tUNILEVER
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t1\t3 M
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t497\tABOVE BASTON
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t5\tACESSORIOS (ATA)
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t7\tACHE EUCERIN
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t9\tACHE PROFUSE
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t22\tAPOLO
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t37\tAVENE
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t40\tBARUEL
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t54\tBIODERMA
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t64\tBLOWTEX
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t385\tCERAVE
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t85\tCLESS
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t89\tCOLGATE
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t92\tCONVENIENCIA GERAL
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t94\tCOTY
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t95\tCREMER
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t99\tDARROW
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t101\tDAUDT LIB
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t102\tDEPI ROLL
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t411\tDEPILSAM
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t107\tDIEGO MONTEIRO COSM
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t394\tDIVCOM PERFUMARIA
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t112\tDIVERSOS (ATA)
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t402\tELETRONICOS SAUDE
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t409\tEMBELLEZE
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t70\tEUROFARMA CANONNE
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t612\tEUROFARMA OAZ
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t137\tFARMAX
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t386\tFIXODENT
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t406\tSALON LINE
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t290\tSAMTEC BIOTECNOLOGIA
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t461\tSC JOHNSON
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t302\tSENSODYNE
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t407\tSKALA
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t449\tSKINCEUTICALS
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t322\tTENA
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t328\tTHERASKIN DERMO
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t341\tUNILEVER
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t350\tVICHY
+242\tFabio\tfabioslitoral@hotmail.com\t3776\tGIANINA\t5\tACESSORIOS (ATA)
+242\tFabio\tfabioslitoral@hotmail.com\t3776\tGIANINA\t22\tAPOLO
+242\tFabio\tfabioslitoral@hotmail.com\t3776\tGIANINA\t85\tCLESS
+242\tFabio\tfabioslitoral@hotmail.com\t3776\tGIANINA\t95\tCREMER
+242\tFabio\tfabioslitoral@hotmail.com\t3776\tGIANINA\t102\tDEPI ROLL
+242\tFabio\tfabioslitoral@hotmail.com\t3776\tGIANINA\t411\tDEPILSAM
+242\tFabio\tfabioslitoral@hotmail.com\t3776\tGIANINA\t112\tDIVERSOS (ATA)
+242\tFabio\tfabioslitoral@hotmail.com\t3776\tGIANINA\t409\tEMBELLEZE
+242\tFabio\tfabioslitoral@hotmail.com\t3776\tGIANINA\t137\tFARMAX
+242\tFabio\tfabioslitoral@hotmail.com\t3776\tGIANINA\t270\tPHYTOERVAS
+242\tFabio\tfabioslitoral@hotmail.com\t3776\tGIANINA\t406\tSALON LINE
+242\tFabio\tfabioslitoral@hotmail.com\t3776\tGIANINA\t290\tSAMTEC BIOTECNOLOGIA
+242\tFabio\tfabioslitoral@hotmail.com\t3776\tGIANINA\t407\tSKALA
+243\tPATRICIA\tpatriciacarvalhoxrd@gmail.com\t3779\tGPZ\t1\t3 M
+243\tPATRICIA\tpatriciacarvalhoxrd@gmail.com\t3779\tGPZ\t5\tACESSORIOS (ATA)
+243\tPATRICIA\tpatriciacarvalhoxrd@gmail.com\t3779\tGPZ\t22\tAPOLO
+243\tPATRICIA\tpatriciacarvalhoxrd@gmail.com\t3779\tGPZ\t64\tBLOWTEX
+243\tPATRICIA\tpatriciacarvalhoxrd@gmail.com\t3779\tGPZ\t85\tCLESS
+243\tPATRICIA\tpatriciacarvalhoxrd@gmail.com\t3779\tGPZ\t95\tCREMER
+243\tPATRICIA\tpatriciacarvalhoxrd@gmail.com\t3779\tGPZ\t102\tDEPI ROLL
+243\tPATRICIA\tpatriciacarvalhoxrd@gmail.com\t3779\tGPZ\t112\tDIVERSOS (ATA)
+243\tPATRICIA\tpatriciacarvalhoxrd@gmail.com\t3779\tGPZ\t402\tELETRONICOS SAUDE
+243\tPATRICIA\tpatriciacarvalhoxrd@gmail.com\t3779\tGPZ\t137\tFARMAX
+243\tPATRICIA\tpatriciacarvalhoxrd@gmail.com\t3779\tGPZ\t413\tFREECÔ
+243\tPATRICIA\tpatriciacarvalhoxrd@gmail.com\t3779\tGPZ\t531\tMELHORAMENTO
+243\tPATRICIA\tpatriciacarvalhoxrd@gmail.com\t3779\tGPZ\t226\tMERHEJE
+243\tPATRICIA\tpatriciacarvalhoxrd@gmail.com\t3779\tGPZ\t389\tMULTILASER
+243\tPATRICIA\tpatriciacarvalhoxrd@gmail.com\t3779\tGPZ\t258\tOMRON
+243\tPATRICIA\tpatriciacarvalhoxrd@gmail.com\t3779\tGPZ\t290\tSAMTEC BIOTECNOLOGIA
+243\tPATRICIA\tpatriciacarvalhoxrd@gmail.com\t3779\tGPZ\t461\tSC JOHNSON
+244\tRomero\tromero@gpz.com.br\t3779\tGPZ\t1\t3 M
+244\tRomero\tromero@gpz.com.br\t3779\tGPZ\t5\tACESSORIOS (ATA)
+244\tRomero\tromero@gpz.com.br\t3779\tGPZ\t22\tAPOLO
+244\tRomero\tromero@gpz.com.br\t3779\tGPZ\t64\tBLOWTEX
+244\tRomero\tromero@gpz.com.br\t3779\tGPZ\t85\tCLESS
+244\tRomero\tromero@gpz.com.br\t3779\tGPZ\t95\tCREMER
+244\tRomero\tromero@gpz.com.br\t3779\tGPZ\t102\tDEPI ROLL
+244\tRomero\tromero@gpz.com.br\t3779\tGPZ\t112\tDIVERSOS (ATA)
+244\tRomero\tromero@gpz.com.br\t3779\tGPZ\t402\tELETRONICOS SAUDE
+244\tRomero\tromero@gpz.com.br\t3779\tGPZ\t137\tFARMAX
+244\tRomero\tromero@gpz.com.br\t3779\tGPZ\t531\tMELHORAMENTO
+244\tRomero\tromero@gpz.com.br\t3779\tGPZ\t226\tMERHEJE
+244\tRomero\tromero@gpz.com.br\t3779\tGPZ\t389\tMULTILASER
+244\tRomero\tromero@gpz.com.br\t3779\tGPZ\t258\tOMRON
+244\tRomero\tromero@gpz.com.br\t3779\tGPZ\t290\tSAMTEC BIOTECNOLOGIA
+244\tRomero\tromero@gpz.com.br\t3779\tGPZ\t461\tSC JOHNSON
+236\tCecilia\tcotacao.cecilia@gmail.com\t3724\tGRAMENSE\t22\tAPOLO
+236\tCecilia\tcotacao.cecilia@gmail.com\t3724\tGRAMENSE\t85\tCLESS
+236\tCecilia\tcotacao.cecilia@gmail.com\t3724\tGRAMENSE\t102\tDEPI ROLL
+236\tCecilia\tcotacao.cecilia@gmail.com\t3724\tGRAMENSE\t112\tDIVERSOS (ATA)
+236\tCecilia\tcotacao.cecilia@gmail.com\t3724\tGRAMENSE\t137\tFARMAX
+236\tCecilia\tcotacao.cecilia@gmail.com\t3724\tGRAMENSE\t270\tPHYTOERVAS
+222\tVanessa\tdisk.descartaveis@terra.com.br\t24109\tLIDER DESCARTAVEIS E MATERIAIS DE LIMPEZA LTDA - ME\t112\tDIVERSOS (ATA)
+245\tRodrigo\trodrigo.Andrade@newellco.com\t3823\tLILLO\t201\tLILLO (DIR)
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t5\tACESSORIOS (ATA)
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t408\tAMEND
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t22\tAPOLO
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t40\tBARUEL
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t50\tBELLIZ
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t83\tCIMED PERFUMARIA
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t85\tCLESS
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t94\tCOTY
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t95\tCREMER
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t102\tDEPI ROLL
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t411\tDEPILSAM
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t112\tDIVERSOS (ATA)
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t515\tDUTY COSMETICOS DABELLE
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t409\tEMBELLEZE
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t137\tFARMAX
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t143\tFLORES & VEGETAIS
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t152\tGENOMMA LABORATORIES
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t164\tGRANADO
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t180\tJ&J
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t189\tKIMBERLY
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t190\tKUKA
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t584\tLABOTRAT
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t206\tLOREAL
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t226\tMERHEJE
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t464\tMURIEL SVEDA
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t245\tNIELY
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t412\tNUPILL
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t270\tPHYTOERVAS
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t573\tPRO ART
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t406\tSALON LINE
+279\tElias\telias.araujo@lojaslivia.com.br\t3827\tLOJAS LÍVIA\t341\tUNILEVER
+246\tLUCAS\tborghilucas3@gmail.com\t3838\tMANTIQUEIRA\t497\tABOVE BASTON
+246\tLUCAS\tborghilucas3@gmail.com\t3838\tMANTIQUEIRA\t40\tBARUEL
+246\tLUCAS\tborghilucas3@gmail.com\t3838\tMANTIQUEIRA\t85\tCLESS
+246\tLUCAS\tborghilucas3@gmail.com\t3838\tMANTIQUEIRA\t89\tCOLGATE
+246\tLUCAS\tborghilucas3@gmail.com\t3838\tMANTIQUEIRA\t94\tCOTY
+246\tLUCAS\tborghilucas3@gmail.com\t3838\tMANTIQUEIRA\t112\tDIVERSOS (ATA)
+246\tLUCAS\tborghilucas3@gmail.com\t3838\tMANTIQUEIRA\t137\tFARMAX
+246\tLUCAS\tborghilucas3@gmail.com\t3838\tMANTIQUEIRA\t164\tGRANADO
+246\tLUCAS\tborghilucas3@gmail.com\t3838\tMANTIQUEIRA\t189\tKIMBERLY
+246\tLUCAS\tborghilucas3@gmail.com\t3838\tMANTIQUEIRA\t531\tMELHORAMENTO
+246\tLUCAS\tborghilucas3@gmail.com\t3838\tMANTIQUEIRA\t247\tNIVEA (DOT)
+246\tLUCAS\tborghilucas3@gmail.com\t3838\tMANTIQUEIRA\t259\tONTEX
+246\tLUCAS\tborghilucas3@gmail.com\t3838\tMANTIQUEIRA\t465\tPHILIPS AVENT
+246\tLUCAS\tborghilucas3@gmail.com\t3838\tMANTIQUEIRA\t270\tPHYTOERVAS
+246\tLUCAS\tborghilucas3@gmail.com\t3838\tMANTIQUEIRA\t284\tRECKITT HB
+246\tLUCAS\tborghilucas3@gmail.com\t3838\tMANTIQUEIRA\t461\tSC JOHNSON
+290\tSIMONE\tsimspires@gmail.com\t3838\tMANTIQUEIRA\t497\tABOVE BASTON
+290\tSIMONE\tsimspires@gmail.com\t3838\tMANTIQUEIRA\t40\tBARUEL
+290\tSIMONE\tsimspires@gmail.com\t3838\tMANTIQUEIRA\t85\tCLESS
+290\tSIMONE\tsimspires@gmail.com\t3838\tMANTIQUEIRA\t89\tCOLGATE
+290\tSIMONE\tsimspires@gmail.com\t3838\tMANTIQUEIRA\t94\tCOTY
+290\tSIMONE\tsimspires@gmail.com\t3838\tMANTIQUEIRA\t112\tDIVERSOS (ATA)
+290\tSIMONE\tsimspires@gmail.com\t3838\tMANTIQUEIRA\t137\tFARMAX
+290\tSIMONE\tsimspires@gmail.com\t3838\tMANTIQUEIRA\t164\tGRANADO
+290\tSIMONE\tsimspires@gmail.com\t3838\tMANTIQUEIRA\t189\tKIMBERLY
+290\tSIMONE\tsimspires@gmail.com\t3838\tMANTIQUEIRA\t531\tMELHORAMENTO
+290\tSIMONE\tsimspires@gmail.com\t3838\tMANTIQUEIRA\t247\tNIVEA (DOT)
+290\tSIMONE\tsimspires@gmail.com\t3838\tMANTIQUEIRA\t259\tONTEX
+290\tSIMONE\tsimspires@gmail.com\t3838\tMANTIQUEIRA\t465\tPHILIPS AVENT
+290\tSIMONE\tsimspires@gmail.com\t3838\tMANTIQUEIRA\t270\tPHYTOERVAS
+290\tSIMONE\tsimspires@gmail.com\t3838\tMANTIQUEIRA\t284\tRECKITT HB
+290\tSIMONE\tsimspires@gmail.com\t3838\tMANTIQUEIRA\t461\tSC JOHNSON
+248\tCATHYE\tcathye.margonar@martins.com.br\t3847\tMARTINS\t497\tABOVE BASTON
+248\tCATHYE\tcathye.margonar@martins.com.br\t3847\tMARTINS\t22\tAPOLO
+248\tCATHYE\tcathye.margonar@martins.com.br\t3847\tMARTINS\t85\tCLESS
+248\tCATHYE\tcathye.margonar@martins.com.br\t3847\tMARTINS\t89\tCOLGATE
+248\tCATHYE\tcathye.margonar@martins.com.br\t3847\tMARTINS\t92\tCONVENIENCIA GERAL
+248\tCATHYE\tcathye.margonar@martins.com.br\t3847\tMARTINS\t94\tCOTY
+248\tCATHYE\tcathye.margonar@martins.com.br\t3847\tMARTINS\t102\tDEPI ROLL
+248\tCATHYE\tcathye.margonar@martins.com.br\t3847\tMARTINS\t112\tDIVERSOS (ATA)
+248\tCATHYE\tcathye.margonar@martins.com.br\t3847\tMARTINS\t402\tELETRONICOS SAUDE
+248\tCATHYE\tcathye.margonar@martins.com.br\t3847\tMARTINS\t137\tFARMAX
+249\tBRUNO\tBrunogarcia4312@gmail.com\t3849\tMASK MAIS\t92\tCONVENIENCIA GERAL
+292\tCaio Vinicius\tcaioviniciussalines123@gmail.com\t3851\tMAXQUALY COSMETICOS\t201\tLILLO (DIR)
+292\tCaio Vinicius\tcaioviniciussalines123@gmail.com\t3851\tMAXQUALY COSMETICOS\t254\tNUTRIEX
+292\tCaio Vinicius\tcaioviniciussalines123@gmail.com\t3851\tMAXQUALY COSMETICOS\t406\tSALON LINE
+250\tZeca\tzeca@medicamental.com.br\t3853\tMEDICAMENTAL\t94\tCOTY
+250\tZeca\tzeca@medicamental.com.br\t3853\tMEDICAMENTAL\t97\tCURAPROX
+250\tZeca\tzeca@medicamental.com.br\t3853\tMEDICAMENTAL\t402\tELETRONICOS SAUDE
+250\tZeca\tzeca@medicamental.com.br\t3853\tMEDICAMENTAL\t137\tFARMAX
+250\tZeca\tzeca@medicamental.com.br\t3853\tMEDICAMENTAL\t164\tGRANADO
+250\tZeca\tzeca@medicamental.com.br\t3853\tMEDICAMENTAL\t389\tMULTILASER
+250\tZeca\tzeca@medicamental.com.br\t3853\tMEDICAMENTAL\t258\tOMRON
+223\tFabio\tfabioneves02@uol.com.br\t25451\tMULTILASER\t389\tMULTILASER
+251\tThiago\tthiagofreitas19081991@hotmail.com\t3868\tNESTLE\t242\tNESTLE (DIR)
+291\tRafaela\traffaella.miletta@oniz.com.br\t4024425\tOniz\t277\tPROCTER E GAMBL
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t7\tACHE EUCERIN
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t9\tACHE PROFUSE
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t408\tAMEND
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t22\tAPOLO
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t54\tBIODERMA
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t385\tCERAVE
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t85\tCLESS
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t89\tCOLGATE
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t94\tCOTY
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t101\tDAUDT LIB
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t102\tDEPI ROLL
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t411\tDEPILSAM
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t394\tDIVCOM PERFUMARIA
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t112\tDIVERSOS (ATA)
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t402\tELETRONICOS SAUDE
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t409\tEMBELLEZE
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t70\tEUROFARMA CANONNE
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t612\tEUROFARMA OAZ
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t137\tFARMAX
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t413\tFREECÔ
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t148\tGALDERMA LIB
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t152\tGENOMMA LABORATORIES
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t164\tGRANADO
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t179\tISDIN FARMA
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t180\tJ&J
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t181\tJ&J NEUTROGENA
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t192\tLA ROCHE POSAY
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t393\tLIBBS LIBERADOS
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t206\tLOREAL
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t209\tMANTECORP SKINCARE
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t389\tMULTILASER
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t245\tNIELY
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t247\tNIVEA (DOT)
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t258\tOMRON
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t284\tRECKITT HB
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t406\tSALON LINE
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t302\tSENSODYNE
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t407\tSKALA
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t328\tTHERASKIN DERMO
+252\tDaniela\tdaniele.mochiatti@panpharma.com.br\t3877\tPANPHARMA\t350\tVICHY
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t7\tACHE EUCERIN
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t9\tACHE PROFUSE
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t22\tAPOLO
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t54\tBIODERMA
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t385\tCERAVE
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t85\tCLESS
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t89\tCOLGATE
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t94\tCOTY
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t101\tDAUDT LIB
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t102\tDEPI ROLL
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t411\tDEPILSAM
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t394\tDIVCOM PERFUMARIA
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t112\tDIVERSOS (ATA)
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t402\tELETRONICOS SAUDE
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t409\tEMBELLEZE
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t70\tEUROFARMA CANONNE
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t137\tFARMAX
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t148\tGALDERMA LIB
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t152\tGENOMMA LABORATORIES
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t164\tGRANADO
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t179\tISDIN FARMA
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t180\tJ&J
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t181\tJ&J NEUTROGENA
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t192\tLA ROCHE POSAY
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t393\tLIBBS LIBERADOS
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t206\tLOREAL
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t209\tMANTECORP SKINCARE
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t389\tMULTILASER
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t245\tNIELY
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t247\tNIVEA (DOT)
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t258\tOMRON
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t284\tRECKITT HB
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t406\tSALON LINE
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t302\tSENSODYNE
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t407\tSKALA
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t328\tTHERASKIN DERMO
+253\tDiego\tcontas.saopaulo@panpharma.com.br\t3877\tPANPHARMA\t350\tVICHY
+54\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t7\tACHE EUCERIN
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t9\tACHE PROFUSE
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t22\tAPOLO
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t54\tBIODERMA
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t385\tCERAVE
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t85\tCLESS
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t89\tCOLGATE
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t94\tCOTY
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t101\tDAUDT LIB
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t102\tDEPI ROLL
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t411\tDEPILSAM
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t394\tDIVCOM PERFUMARIA
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t112\tDIVERSOS (ATA)
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t402\tELETRONICOS SAUDE
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t409\tEMBELLEZE
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t70\tEUROFARMA CANONNE
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t137\tFARMAX
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t148\tGALDERMA LIB
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t152\tGENOMMA LABORATORIES
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t164\tGRANADO
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t179\tISDIN FARMA
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t180\tJ&J
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t181\tJ&J NEUTROGENA
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t192\tLA ROCHE POSAY
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t393\tLIBBS LIBERADOS
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t206\tLOREAL
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t209\tMANTECORP SKINCARE
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t389\tMULTILASER
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t245\tNIELY
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t247\tNIVEA (DOT)
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t258\tOMRON
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t284\tRECKITT HB
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t406\tSALON LINE
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t302\tSENSODYNE
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t407\tSKALA
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t328\tTHERASKIN DERMO
+254\tPriscila\tpriscilla.nery@panpharma.com.br\t3877\tPANPHARMA\t350\tVICHY
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t7\tACHE EUCERIN
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t9\tACHE PROFUSE
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t22\tAPOLO
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t54\tBIODERMA
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t385\tCERAVE
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t85\tCLESS
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t89\tCOLGATE
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t94\tCOTY
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t101\tDAUDT LIB
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t102\tDEPI ROLL
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t411\tDEPILSAM
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t394\tDIVCOM PERFUMARIA
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t112\tDIVERSOS (ATA)
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t402\tELETRONICOS SAUDE
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t409\tEMBELLEZE
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t70\tEUROFARMA CANONNE
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t137\tFARMAX
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t148\tGALDERMA LIB
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t152\tGENOMMA LABORATORIES
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t164\tGRANADO
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t179\tISDIN FARMA
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t180\tJ&J
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t181\tJ&J NEUTROGENA
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t192\tLA ROCHE POSAY
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t393\tLIBBS LIBERADOS
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t206\tLOREAL
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t209\tMANTECORP SKINCARE
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t389\tMULTILASER
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t245\tNIELY
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t247\tNIVEA (DOT)
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t258\tOMRON
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t284\tRECKITT HB
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t406\tSALON LINE
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t302\tSENSODYNE
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t407\tSKALA
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t328\tTHERASKIN DERMO
+255\tVanessa P.\tvanessa.carvalho@panpharma.com.br\t3877\tPANPHARMA\t350\tVICHY
+256\tPaula\taninhapaula24@hotmail.com\t3880\tPAULO J. MALASPINA\t5\tACESSORIOS (ATA)
+256\tPaula\taninhapaula24@hotmail.com\t3880\tPAULO J. MALASPINA\t22\tAPOLO
+256\tPaula\taninhapaula24@hotmail.com\t3880\tPAULO J. MALASPINA\t85\tCLESS
+256\tPaula\taninhapaula24@hotmail.com\t3880\tPAULO J. MALASPINA\t95\tCREMER
+256\tPaula\taninhapaula24@hotmail.com\t3880\tPAULO J. MALASPINA\t102\tDEPI ROLL
+256\tPaula\taninhapaula24@hotmail.com\t3880\tPAULO J. MALASPINA\t112\tDIVERSOS (ATA)
+256\tPaula\taninhapaula24@hotmail.com\t3880\tPAULO J. MALASPINA\t402\tELETRONICOS SAUDE
+256\tPaula\taninhapaula24@hotmail.com\t3880\tPAULO J. MALASPINA\t137\tFARMAX
+256\tPaula\taninhapaula24@hotmail.com\t3880\tPAULO J. MALASPINA\t189\tKIMBERLY
+256\tPaula\taninhapaula24@hotmail.com\t3880\tPAULO J. MALASPINA\t531\tMELHORAMENTO
+256\tPaula\taninhapaula24@hotmail.com\t3880\tPAULO J. MALASPINA\t389\tMULTILASER
+256\tPaula\taninhapaula24@hotmail.com\t3880\tPAULO J. MALASPINA\t258\tOMRON
+256\tPaula\taninhapaula24@hotmail.com\t3880\tPAULO J. MALASPINA\t259\tONTEX
+256\tPaula\taninhapaula24@hotmail.com\t3880\tPAULO J. MALASPINA\t270\tPHYTOERVAS
+256\tPaula\taninhapaula24@hotmail.com\t3880\tPAULO J. MALASPINA\t290\tSAMTEC BIOTECNOLOGIA
+256\tPaula\taninhapaula24@hotmail.com\t3880\tPAULO J. MALASPINA\t322\tTENA
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t9\tACHE PROFUSE
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t22\tAPOLO
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t385\tCERAVE
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t413\tFREECÔ
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t148\tGALDERMA LIB
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t152\tGENOMMA LABORATORIES
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t179\tISDIN FARMA
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t180\tJ&J
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t181\tJ&J NEUTROGENA
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t189\tKIMBERLY
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t192\tLA ROCHE POSAY
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t393\tLIBBS LIBERADOS
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t201\tLILLO (DIR)
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t206\tLOREAL
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t209\tMANTECORP SKINCARE
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t531\tMELHORAMENTO
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t226\tMERHEJE
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t231\tMONDELEZ
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t389\tMULTILASER
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t242\tNESTLE (DIR)
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t245\tNIELY
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t247\tNIVEA (DOT)
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t259\tONTEX
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t270\tPHYTOERVAS
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t277\tPROCTER E GAMBL
+284\tPALOMA\tpaloma.maciel@gam.com.br\t624473\tGENESIO A. MENDES E CIA LTDA\t284\tRECKITT HB
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t85\tCLESS
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t89\tCOLGATE
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t99\tDARROW
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t101\tDAUDT LIB
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t102\tDEPI ROLL
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t394\tDIVCOM PERFUMARIA
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t112\tDIVERSOS (ATA)
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t402\tELETRONICOS SAUDE
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t612\tEUROFARMA OAZ
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t137\tFARMAX
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t386\tFIXODENT
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t148\tGALDERMA LIB
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t152\tGENOMMA LABORATORIES
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t651\tHALEON HPC
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t179\tISDIN FARMA
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t180\tJ&J
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t181\tJ&J NEUTROGENA
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t189\tKIMBERLY
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t192\tLA ROCHE POSAY
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t209\tMANTECORP SKINCARE
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t389\tMULTILASER
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t258\tOMRON
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t277\tPROCTER E GAMBL
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t284\tRECKITT HB
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t461\tSC JOHNSON
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t302\tSENSODYNE
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t341\tUNILEVER
+257\tLucinei\tlucinei.menezes@profarma.com.br\t3904\tPROFARMA\t350\tVICHY
+258\tIona - Carolina\tcoordenacaosp@qualynutri.com.br\t3918\tRODRIGO SOLDERA\t5\tACESSORIOS (ATA)
+258\tIona - Carolina\tcoordenacaosp@qualynutri.com.br\t3918\tRODRIGO SOLDERA\t22\tAPOLO
+258\tIona - Carolina\tcoordenacaosp@qualynutri.com.br\t3918\tRODRIGO SOLDERA\t64\tBLOWTEX
+258\tIona - Carolina\tcoordenacaosp@qualynutri.com.br\t3918\tRODRIGO SOLDERA\t85\tCLESS
+258\tIona - Carolina\tcoordenacaosp@qualynutri.com.br\t3918\tRODRIGO SOLDERA\t95\tCREMER
+258\tIona - Carolina\tcoordenacaosp@qualynutri.com.br\t3918\tRODRIGO SOLDERA\t102\tDEPI ROLL
+258\tIona - Carolina\tcoordenacaosp@qualynutri.com.br\t3918\tRODRIGO SOLDERA\t107\tDIEGO MONTEIRO COSM
+258\tIona - Carolina\tcoordenacaosp@qualynutri.com.br\t3918\tRODRIGO SOLDERA\t112\tDIVERSOS (ATA)
+258\tIona - Carolina\tcoordenacaosp@qualynutri.com.br\t3918\tRODRIGO SOLDERA\t137\tFARMAX
+258\tIona - Carolina\tcoordenacaosp@qualynutri.com.br\t3918\tRODRIGO SOLDERA\t226\tMERHEJE
+269\tElaine\telainemansanos@gmail.com\t4321\tROGE INTERG COMERCIO DE DISTRIBUIÇÃO DE ALIMENTOS LTDA\t22\tAPOLO
+269\tElaine\telainemansanos@gmail.com\t4321\tROGE INTERG COMERCIO DE DISTRIBUIÇÃO DE ALIMENTOS LTDA\t40\tBARUEL
+269\tElaine\telainemansanos@gmail.com\t4321\tROGE INTERG COMERCIO DE DISTRIBUIÇÃO DE ALIMENTOS LTDA\t85\tCLESS
+269\tElaine\telainemansanos@gmail.com\t4321\tROGE INTERG COMERCIO DE DISTRIBUIÇÃO DE ALIMENTOS LTDA\t89\tCOLGATE
+269\tElaine\telainemansanos@gmail.com\t4321\tROGE INTERG COMERCIO DE DISTRIBUIÇÃO DE ALIMENTOS LTDA\t94\tCOTY
+269\tElaine\telainemansanos@gmail.com\t4321\tROGE INTERG COMERCIO DE DISTRIBUIÇÃO DE ALIMENTOS LTDA\t102\tDEPI ROLL
+269\tElaine\telainemansanos@gmail.com\t4321\tROGE INTERG COMERCIO DE DISTRIBUIÇÃO DE ALIMENTOS LTDA\t411\tDEPILSAM
+269\tElaine\telainemansanos@gmail.com\t4321\tROGE INTERG COMERCIO DE DISTRIBUIÇÃO DE ALIMENTOS LTDA\t112\tDIVERSOS (ATA)
+269\tElaine\telainemansanos@gmail.com\t4321\tROGE INTERG COMERCIO DE DISTRIBUIÇÃO DE ALIMENTOS LTDA\t409\tEMBELLEZE
+269\tElaine\telainemansanos@gmail.com\t4321\tROGE INTERG COMERCIO DE DISTRIBUIÇÃO DE ALIMENTOS LTDA\t137\tFARMAX
+269\tElaine\telainemansanos@gmail.com\t4321\tROGE INTERG COMERCIO DE DISTRIBUIÇÃO DE ALIMENTOS LTDA\t189\tKIMBERLY
+269\tElaine\telainemansanos@gmail.com\t4321\tROGE INTERG COMERCIO DE DISTRIBUIÇÃO DE ALIMENTOS LTDA\t226\tMERHEJE
+269\tElaine\telainemansanos@gmail.com\t4321\tROGE INTERG COMERCIO DE DISTRIBUIÇÃO DE ALIMENTOS LTDA\t247\tNIVEA (DOT)
+269\tElaine\telainemansanos@gmail.com\t4321\tROGE INTERG COMERCIO DE DISTRIBUIÇÃO DE ALIMENTOS LTDA\t277\tPROCTER E GAMBL
+269\tElaine\telainemansanos@gmail.com\t4321\tROGE INTERG COMERCIO DE DISTRIBUIÇÃO DE ALIMENTOS LTDA\t284\tRECKITT HB
+269\tElaine\telainemansanos@gmail.com\t4321\tROGE INTERG COMERCIO DE DISTRIBUIÇÃO DE ALIMENTOS LTDA\t406\tSALON LINE
+269\tElaine\telainemansanos@gmail.com\t4321\tROGE INTERG COMERCIO DE DISTRIBUIÇÃO DE ALIMENTOS LTDA\t407\tSKALA
+269\tElaine\telainemansanos@gmail.com\t4321\tROGE INTERG COMERCIO DE DISTRIBUIÇÃO DE ALIMENTOS LTDA\t341\tUNILEVER
+259\tPaulo\tvendasfarmacia7@samapi.com.br\t3930\tSAMAPI\t1\t3 M
+259\tPaulo\tvendasfarmacia7@samapi.com.br\t3930\tSAMAPI\t497\tABOVE BASTON
+259\tPaulo\tvendasfarmacia7@samapi.com.br\t3930\tSAMAPI\t5\tACESSORIOS (ATA)
+259\tPaulo\tvendasfarmacia7@samapi.com.br\t3930\tSAMAPI\t22\tAPOLO
+259\tPaulo\tvendasfarmacia7@samapi.com.br\t3930\tSAMAPI\t85\tCLESS
+259\tPaulo\tvendasfarmacia7@samapi.com.br\t3930\tSAMAPI\t94\tCOTY
+259\tPaulo\tvendasfarmacia7@samapi.com.br\t3930\tSAMAPI\t95\tCREMER
+259\tPaulo\tvendasfarmacia7@samapi.com.br\t3930\tSAMAPI\t102\tDEPI ROLL
+259\tPaulo\tvendasfarmacia7@samapi.com.br\t3930\tSAMAPI\t411\tDEPILSAM
+259\tPaulo\tvendasfarmacia7@samapi.com.br\t3930\tSAMAPI\t107\tDIEGO MONTEIRO COSM
+259\tPaulo\tvendasfarmacia7@samapi.com.br\t3930\tSAMAPI\t112\tDIVERSOS (ATA)
+259\tPaulo\tvendasfarmacia7@samapi.com.br\t3930\tSAMAPI\t402\tELETRONICOS SAUDE
+259\tPaulo\tvendasfarmacia7@samapi.com.br\t3930\tSAMAPI\t409\tEMBELLEZE
+259\tPaulo\tvendasfarmacia7@samapi.com.br\t3930\tSAMAPI\t137\tFARMAX
+259\tPaulo\tvendasfarmacia7@samapi.com.br\t3930\tSAMAPI\t164\tGRANADO
+259\tPaulo\tvendasfarmacia7@samapi.com.br\t3930\tSAMAPI\t531\tMELHORAMENTO
+259\tPaulo\tvendasfarmacia7@samapi.com.br\t3930\tSAMAPI\t389\tMULTILASER
+259\tPaulo\tvendasfarmacia7@samapi.com.br\t3930\tSAMAPI\t258\tOMRON
+259\tPaulo\tvendasfarmacia7@samapi.com.br\t3930\tSAMAPI\t270\tPHYTOERVAS
+259\tPaulo\tvendasfarmacia7@samapi.com.br\t3930\tSAMAPI\t406\tSALON LINE
+259\tPaulo\tvendasfarmacia7@samapi.com.br\t3930\tSAMAPI\t290\tSAMTEC BIOTECNOLOGIA
+259\tPaulo\tvendasfarmacia7@samapi.com.br\t3930\tSAMAPI\t407\tSKALA
+259\tPaulo\tvendasfarmacia7@samapi.com.br\t3930\tSAMAPI\t322\tTENA
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t497\tABOVE BASTON
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t5\tACESSORIOS (ATA)
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t7\tACHE EUCERIN
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t9\tACHE PROFUSE
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t22\tAPOLO
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t37\tAVENE
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t54\tBIODERMA
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t64\tBLOWTEX
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t385\tCERAVE
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t85\tCLESS
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t89\tCOLGATE
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t95\tCREMER
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t99\tDARROW
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t101\tDAUDT LIB
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t102\tDEPI ROLL
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t394\tDIVCOM PERFUMARIA
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t112\tDIVERSOS (ATA)
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t402\tELETRONICOS SAUDE
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t70\tEUROFARMA CANONNE
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t612\tEUROFARMA OAZ
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t137\tFARMAX
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t386\tFIXODENT
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t148\tGALDERMA LIB
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t152\tGENOMMA LABORATORIES
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t164\tGRANADO
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t651\tHALEON HPC
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t179\tISDIN FARMA
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t180\tJ&J
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t181\tJ&J NEUTROGENA
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t189\tKIMBERLY
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t192\tLA ROCHE POSAY
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t393\tLIBBS LIBERADOS
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t201\tLILLO (DIR)
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t206\tLOREAL
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t209\tMANTECORP SKINCARE
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t389\tMULTILASER
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t242\tNESTLE (DIR)
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t245\tNIELY
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t247\tNIVEA (DOT)
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t258\tOMRON
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t259\tONTEX
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t277\tPROCTER E GAMBL
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t284\tRECKITT HB
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t290\tSAMTEC BIOTECNOLOGIA
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t461\tSC JOHNSON
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t302\tSENSODYNE
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t449\tSKINCEUTICALS
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t328\tTHERASKIN DERMO
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t341\tUNILEVER
+233\tJessica\tjessica.alves@stcruz.com.br\t3720\tSANTA CRUZ\t350\tVICHY
+234\tLidia\tlidia.santos@stcruz.com.br\t3720\tSANTA CRUZ\t497\tABOVE BASTON
+234\tLidia\tlidia.santos@stcruz.com.br\t3720\tSANTA CRUZ\t5\tACESSORIOS (ATA)
+234\tLidia\tlidia.santos@stcruz.com.br\t3720\tSANTA CRUZ\t7\tACHE EUCERIN
+234\tLidia\tlidia.santos@stcruz.com.br\t3720\tSANTA CRUZ\t9\tACHE PROFUSE
+234\tLidia\tlidia.santos@stcruz.com.br\t3720\tSANTA CRUZ\t22\tAPOLO
+234\tLidia\tlidia.santos@stcruz.com.br\t3720\tSANTA CRUZ\t37\tAVENE
+234\tLidia\tlidia.santos@stcruz.com.br\t3720\tSANTA CRUZ\t54\tBIODERMA
+234\tLidia\tlidia.santos@stcruz.com.br\t3720\tSANTA CRUZ\t64\tBLOWTEX
+234\tLidia\tlidia.santos@stcruz.com.br\t3720\tSANTA CRUZ\t385\tCERAVE
+234\tLidia\tlidia.santos@stcruz.com.br\t3720\tSANTA CRUZ\t85\tCLESS
+234\tLidia\tlidia.santos@stcruz.com.br\t3720\tSANTA CRUZ\t89\tCOLGATE
+234\tLidia\tlidia.santos@stcruz.com.br\t3720\tSANTA CRUZ\t95\tCREMER
+234\tLidia\tlidia.santos@stcruz.com.br\t3720\tSANTA CRUZ\t99\tDARROW
+234\tLidia\tlidia.santos@stcruz.com.br\t3720\tSANTA CRUZ\t101\tDAUDT LIB
+234\tLidia\tlidia.santos@stcruz.com.br\t3720\tSANTA CRUZ\t102\tDEPI ROLL
+234\tLidia\tlidia.santos@stcruz.com.br\t3720\tSANTA CRUZ\t394\tDIVCOM PERFUMARIA
+234\tLidia\tlidia.santos@stcruz.com.br\t3720\tSANTA CRUZ\t112\tDIVERSOS (ATA)
+234\tLidia\tlidia.santos@stcruz.com.br\t3720\tSANTA CRUZ\t402\tELETRONICOS SAUDE
+234\tLidia\tlidia.santos@stcruz.com.br\t3720\tSANTA CRUZ\t70\tEUROFARMA CANONNE
+234\tLidia\tlidia.santos@stcruz.com.br\t3720\tSANTA CRUZ\t612\tEUROFARMA OAZ
+234\tLidia\tlidia.santos@stcruz.com.br\t3720\tSANTA CRUZ\t137\t
