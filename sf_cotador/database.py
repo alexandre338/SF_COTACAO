@@ -11,6 +11,19 @@ TABLE_FORNEC = "TB_COT_CAD_FORNEC"
 TABLE_REPRES = "TB_COT_CAD_REPRESENTANTE"
 TABLE_CONTATO = "TB_COT_CONTATO"
 
+LEGACY_TABLE_MARCAS = "dbo.MARCAS"
+LEGACY_TABLE_PRODUTOS = "dbo.PRODUTOS"
+LEGACY_TABLE_PRODUTOS_EAN = "dbo.PRODUTOS_EAN"
+LEGACY_TABLE_PRODUTOS_FORNECEDORES = "dbo.PRODUTOS_FORNECEDORES"
+LEGACY_TABLE_ESTOQUE_DEMANDAS = "dbo.VW_PRODUTOS_ESTOQUE_DEMANDAS"
+
+DEFAULT_SQL_SERVER_DRIVER = "ODBC Driver 18 for SQL Server"
+DEFAULT_SQL_SERVER_HOST = "rosario.procfit.com.br"
+DEFAULT_SQL_SERVER_PORT = "1433"
+DEFAULT_SQL_SERVER_DATABASE = "PBS_ROSARIO_DADOS"
+DEFAULT_SQL_SERVER_USER = "rosario.ServiceFarma"
+DEFAULT_SQL_SERVER_PASSWORD = "gtujku"
+
 
 class DatabaseAdapter(Protocol):
     def init_db(self) -> None: ...
@@ -29,6 +42,7 @@ class DatabaseAdapter(Protocol):
     ) -> None: ...
     def fetch_contatos(self) -> list[dict[str, Any]]: ...
     def insert_contato(self, d_contato: int, nome: str, email_usuario: str, situacao: str, acoes: str) -> None: ...
+    def fetch_relatorio_contatos(self) -> list[dict[str, Any]]: ...
 
 
 class SQLiteAdapter:
@@ -310,6 +324,37 @@ class SQLiteAdapter:
             )
             conn.commit()
 
+    def fetch_relatorio_contatos(self) -> list[dict[str, Any]]:
+        with self.get_connection() as conn:
+            cur = conn.execute(
+                f"""
+                SELECT
+                    c.D,
+                    c.Nome AS Contato,
+                    c."E-mail/Usuario",
+                    c.Situacao,
+                    c.Acoes,
+                    r.CodRepres,
+                    r.Nome AS Representante,
+                    r.Login,
+                    r."Cod Forn",
+                    r.Fornecedor,
+                    r."Cod Marca",
+                    r.Marca,
+                    f.ID AS FornecedorID,
+                    f.Procfit,
+                    f.Nome AS Fabricante,
+                    f."Nome Fantasia"
+                FROM {TABLE_CONTATO} AS c
+                INNER JOIN {TABLE_REPRES} AS r
+                    ON c.D = r.CodRepres
+                INNER JOIN {TABLE_FORNEC} AS f
+                    ON r."Cod Forn" = f.Procfit
+                ORDER BY f.Nome, r.Marca, c.Nome, c.D
+                """
+            )
+            return [dict(row) for row in cur.fetchall()]
+
 
 class AccessAdapter:
     def __init__(self) -> None:
@@ -527,6 +572,134 @@ class AccessAdapter:
                 )
             conn.commit()
 
+    def fetch_relatorio_contatos(self) -> list[dict[str, Any]]:
+        with self._connect() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                f"""
+                SELECT
+                    c.[D],
+                    c.[Nome] AS [Contato],
+                    c.[E-mail/Usuario],
+                    c.[Situacao],
+                    c.[Acoes],
+                    r.[CodRepres],
+                    r.[Nome] AS [Representante],
+                    r.[Login],
+                    r.[Cod Forn],
+                    r.[Fornecedor],
+                    r.[Cod Marca],
+                    r.[Marca],
+                    f.[ID] AS [FornecedorID],
+                    f.[Procfit],
+                    f.[Nome] AS [Fabricante],
+                    f.[Nome Fantasia]
+                FROM ([{TABLE_CONTATO}] AS c
+                INNER JOIN [{TABLE_REPRES}] AS r
+                    ON c.[D] = r.[CodRepres])
+                INNER JOIN [{TABLE_FORNEC}] AS f
+                    ON r.[Cod Forn] = f.[Procfit]
+                ORDER BY f.[Nome], r.[Marca], c.[Nome], c.[D]
+                """
+            )
+            return self._row_to_dicts(cur)
+
+
+class LegacySQLServerAdapter:
+    def __init__(self) -> None:
+        self.conn_str = self._build_connection_string()
+
+    def _build_connection_string(self) -> str:
+        direct = os.getenv("SF_COTADOR_LEGACY_SQLSERVER_CONN_STR", "").strip()
+        if direct:
+            return direct
+
+        server = os.getenv("SF_COTADOR_LEGACY_SQLSERVER_HOST", DEFAULT_SQL_SERVER_HOST).strip()
+        if not server:
+            raise RuntimeError("SF_COTADOR_LEGACY_SQLSERVER_HOST nao foi informado.")
+
+        port = os.getenv("SF_COTADOR_LEGACY_SQLSERVER_PORT", DEFAULT_SQL_SERVER_PORT).strip()
+        database_name = os.getenv("SF_COTADOR_LEGACY_SQLSERVER_DATABASE", DEFAULT_SQL_SERVER_DATABASE).strip()
+        if not database_name:
+            raise RuntimeError("SF_COTADOR_LEGACY_SQLSERVER_DATABASE nao foi informado.")
+
+        driver = os.getenv("SF_COTADOR_LEGACY_SQLSERVER_DRIVER", DEFAULT_SQL_SERVER_DRIVER).strip()
+        username = os.getenv("SF_COTADOR_LEGACY_SQLSERVER_USER", DEFAULT_SQL_SERVER_USER).strip()
+        password = os.getenv("SF_COTADOR_LEGACY_SQLSERVER_PASSWORD", DEFAULT_SQL_SERVER_PASSWORD).strip()
+        trust_cert = os.getenv("SF_COTADOR_LEGACY_SQLSERVER_TRUST_CERT", "yes").strip().lower()
+
+        server_ref = server if not port else f"{server},{port}"
+        conn_parts = [
+            f"DRIVER={{{driver}}}",
+            f"SERVER={server_ref}",
+            f"DATABASE={database_name}",
+            f"TrustServerCertificate={trust_cert}",
+        ]
+
+        if username:
+            conn_parts.append(f"UID={username}")
+            conn_parts.append(f"PWD={password}")
+        else:
+            conn_parts.append("Trusted_Connection=yes")
+
+        return ";".join(conn_parts) + ";"
+
+    def _connect(self):
+        try:
+            import pyodbc
+        except ImportError as exc:
+            raise RuntimeError(
+                "pyodbc nao esta instalado. Instale com: python -m pip install pyodbc"
+            ) from exc
+        return pyodbc.connect(self.conn_str)
+
+    def _row_to_dicts(self, cursor) -> list[dict[str, Any]]:
+        cols = [c[0] for c in cursor.description]
+        return [dict(zip(cols, row)) for row in cursor.fetchall()]
+
+    def _qualify_name(self, object_name: str) -> str:
+        parts = [part.strip() for part in object_name.split(".") if part.strip()]
+        if not parts:
+            raise RuntimeError("Nome de objeto SQL Server invalido.")
+        return ".".join(f"[{part}]" for part in parts)
+
+    def fetch_table(self, table_name: str) -> list[dict[str, Any]]:
+        allowed_tables = {
+            LEGACY_TABLE_MARCAS,
+            LEGACY_TABLE_PRODUTOS,
+            LEGACY_TABLE_PRODUTOS_EAN,
+            LEGACY_TABLE_PRODUTOS_FORNECEDORES,
+            LEGACY_TABLE_ESTOQUE_DEMANDAS,
+        }
+        if table_name not in allowed_tables:
+            raise RuntimeError(f"Tabela legada nao permitida: {table_name}")
+
+        with self._connect() as conn:
+            cur = conn.cursor()
+            cur.execute(f"SELECT * FROM {self._qualify_name(table_name)}")
+            return self._row_to_dicts(cur)
+
+    def fetch_produtos_integrados(self) -> list[dict[str, Any]]:
+        with self._connect() as conn:
+            cur = conn.cursor()
+            cur.execute(
+                f"""
+                SELECT
+                    p.[PRODUTO] AS [CD_PROD],
+                    p.[DESCRICAO],
+                    p.[MARCA] AS [CD_MARCA],
+                    m.[DESCRICAO] AS [MARCA],
+                    e.[EAN]
+                FROM {self._qualify_name(LEGACY_TABLE_PRODUTOS_EAN)} AS e
+                INNER JOIN {self._qualify_name(LEGACY_TABLE_PRODUTOS)} AS p
+                    ON e.[PRODUTO] = p.[PRODUTO]
+                INNER JOIN {self._qualify_name(LEGACY_TABLE_MARCAS)} AS m
+                    ON m.[MARCA] = p.[MARCA]
+                ORDER BY p.[DESCRICAO], e.[EAN]
+                """
+            )
+            return self._row_to_dicts(cur)
+
 
 def _build_adapter() -> DatabaseAdapter:
     backend = os.getenv("SF_COTADOR_DB_BACKEND", "sqlite").strip().lower()
@@ -538,6 +711,14 @@ def _build_adapter() -> DatabaseAdapter:
 
 
 _ADAPTER: DatabaseAdapter = _build_adapter()
+_LEGACY_ADAPTER: LegacySQLServerAdapter | None = None
+
+
+def _get_legacy_adapter() -> LegacySQLServerAdapter:
+    global _LEGACY_ADAPTER
+    if _LEGACY_ADAPTER is None:
+        _LEGACY_ADAPTER = LegacySQLServerAdapter()
+    return _LEGACY_ADAPTER
 
 
 def init_db() -> None:
@@ -574,3 +755,70 @@ def fetch_contatos() -> list[dict[str, Any]]:
 
 def insert_contato(d_contato: int, nome: str, email_usuario: str, situacao: str, acoes: str) -> None:
     _ADAPTER.insert_contato(d_contato, nome, email_usuario, situacao, acoes)
+
+
+def fetch_relatorio_contatos() -> list[dict[str, Any]]:
+    return _ADAPTER.fetch_relatorio_contatos()
+
+
+def fetch_legado_marcas() -> list[dict[str, Any]]:
+    return _get_legacy_adapter().fetch_table(LEGACY_TABLE_MARCAS)
+
+
+def fetch_legado_produtos() -> list[dict[str, Any]]:
+    return _get_legacy_adapter().fetch_table(LEGACY_TABLE_PRODUTOS)
+
+
+def fetch_legado_produtos_ean() -> list[dict[str, Any]]:
+    return _get_legacy_adapter().fetch_table(LEGACY_TABLE_PRODUTOS_EAN)
+
+
+def fetch_legado_produtos_fornecedores() -> list[dict[str, Any]]:
+    return _get_legacy_adapter().fetch_table(LEGACY_TABLE_PRODUTOS_FORNECEDORES)
+
+
+def fetch_legado_produtos_estoque_demandas() -> list[dict[str, Any]]:
+    return _get_legacy_adapter().fetch_table(LEGACY_TABLE_ESTOQUE_DEMANDAS)
+
+
+def fetch_legado_produtos_integrados() -> list[dict[str, Any]]:
+    return _get_legacy_adapter().fetch_produtos_integrados()
+
+
+def fetch_relatorio_contatos_produtos() -> list[dict[str, Any]]:
+    contatos = fetch_relatorio_contatos()
+    produtos = fetch_legado_produtos_integrados()
+
+    produtos_por_marca: dict[int, list[dict[str, Any]]] = {}
+    for produto in produtos:
+        try:
+            cod_marca = int(produto["CD_MARCA"])
+        except (TypeError, ValueError, KeyError):
+            continue
+        produtos_por_marca.setdefault(cod_marca, []).append(produto)
+
+    resultado: list[dict[str, Any]] = []
+    for contato in contatos:
+        try:
+            cod_marca = int(contato["Cod Marca"])
+        except (TypeError, ValueError, KeyError):
+            continue
+
+        for produto in produtos_por_marca.get(cod_marca, []):
+            resultado.append(
+                {
+                    "Nome": contato["Contato"],
+                    "E-mail/Usuario": contato["E-mail/Usuario"],
+                    "CD_FORNEC": contato["Cod Forn"],
+                    "Nome Fantasia": contato["Nome Fantasia"],
+                    "MARCA": produto["MARCA"],
+                    "CD_PROD": produto["CD_PROD"],
+                    "EAN": produto["EAN"],
+                    "DESCRICAO": produto["DESCRICAO"],
+                    "VALOR UNITARIO": "",
+                    "FATOR EMBALAGEM": "",
+                }
+            )
+
+    resultado.sort(key=lambda row: (str(row["DESCRICAO"]), str(row["Nome"]), str(row["EAN"])))
+    return resultado

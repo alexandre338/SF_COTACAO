@@ -4,7 +4,7 @@ Projeto inicial para evolução do sistema de cotação, com tela base simples.
 
 ## Banco de dados
 
-O projeto agora suporta dois backends:
+O projeto agora suporta dois backends internos:
 
 - `sqlite` (padrao)
 - `access` (Microsoft Access `.mdb/.accdb` via ODBC)
@@ -57,6 +57,46 @@ Opcional: driver customizado:
 
 ```powershell
 $env:SF_COTADOR_ACCESS_DRIVER = "Microsoft Access Driver (*.mdb, *.accdb)"
+```
+
+## Banco legado em SQL Server
+
+As consultas ao sistema legado usam SQL Server via `pyodbc`.
+
+1. Instale `pyodbc`:
+
+```powershell
+python -m pip install pyodbc
+```
+
+2. Garanta um driver ODBC do SQL Server instalado no Windows:
+
+- `ODBC Driver 17 for SQL Server`
+- `ODBC Driver 18 for SQL Server`
+
+3. Configure as variaveis de ambiente do legado:
+
+```powershell
+$env:SF_COTADOR_LEGACY_SQLSERVER_HOST = "SERVIDOR"
+$env:SF_COTADOR_LEGACY_SQLSERVER_PORT = "1433"
+$env:SF_COTADOR_LEGACY_SQLSERVER_DATABASE = "NOME_DO_BANCO"
+$env:SF_COTADOR_LEGACY_SQLSERVER_USER = "usuario"
+$env:SF_COTADOR_LEGACY_SQLSERVER_PASSWORD = "senha"
+```
+
+Se usar autenticacao integrada do Windows, omita `USER` e `PASSWORD`.
+
+Opcional: usar string de conexao pronta:
+
+```powershell
+$env:SF_COTADOR_LEGACY_SQLSERVER_CONN_STR = "DRIVER={ODBC Driver 17 for SQL Server};SERVER=SERVIDOR,1433;DATABASE=NOME_DO_BANCO;UID=usuario;PWD=senha;TrustServerCertificate=yes;"
+```
+
+Opcional: driver e certificado:
+
+```powershell
+$env:SF_COTADOR_LEGACY_SQLSERVER_DRIVER = "ODBC Driver 17 for SQL Server"
+$env:SF_COTADOR_LEGACY_SQLSERVER_TRUST_CERT = "yes"
 ```
 
 ## Fluxo atual
