@@ -46,6 +46,18 @@ def create_tree_with_scrollbars(
     return tree, scrollbar_y, scrollbar_x
 
 
+def configure_tree_columns(
+    tree: ttk.Treeview,
+    columns: tuple[str, ...],
+    widths: dict[str, int],
+    headings: dict[str, str] | None = None,
+) -> None:
+    headings = headings or {}
+    for col in columns:
+        tree.heading(col, text=headings.get(col, col))
+        tree.column(col, width=widths[col], anchor="w")
+
+
 def is_valid_email(email: str) -> bool:
     email = email.strip()
     return "@" in email and "." in email.split("@")[-1]
@@ -57,6 +69,36 @@ def summarize_selected_values(selected_values: set[str]) -> str:
     if len(selected_values) == 1:
         return next(iter(selected_values))
     return f"{len(selected_values)} selecionados"
+
+
+def apply_sequential_filters(
+    rows: list[dict[str, object]],
+    filter_specs: tuple[tuple[str, str], ...],
+    filter_state: dict[str, set[str]],
+    limit_row_key: str | None = None,
+) -> list[dict[str, object]]:
+    filtered_rows = rows
+    for _, row_key in filter_specs:
+        if limit_row_key is not None and row_key == limit_row_key:
+            break
+        selected_values = filter_state.get(row_key, set())
+        if selected_values:
+            filtered_rows = [row for row in filtered_rows if str(row.get(row_key, "")) in selected_values]
+    return filtered_rows
+
+
+def refresh_sequential_filter_options(
+    rows: list[dict[str, object]],
+    filter_specs: tuple[tuple[str, str], ...],
+    filter_state: dict[str, set[str]],
+) -> dict[str, list[str]]:
+    filter_options: dict[str, list[str]] = {}
+    for _, row_key in filter_specs:
+        available_rows = apply_sequential_filters(rows, filter_specs, filter_state, limit_row_key=row_key)
+        available_options = sorted({str(row.get(row_key, "")) for row in available_rows})
+        filter_options[row_key] = available_options
+        filter_state[row_key] = {value for value in filter_state[row_key] if value in available_options}
+    return filter_options
 
 
 def open_multi_select_dialog(
@@ -771,16 +813,27 @@ def show_contatos_modal(parent: tk.Tk) -> None:
     list_frame.grid_rowconfigure(0, weight=1)
     list_frame.grid_columnconfigure(0, weight=1)
 
-    columns = ("D", "Nome", "E-mail/Usuário", "Situação", "Ações")
+    columns = ("D", "Nome", "E-mail/Usuario", "Situacao", "Acoes")
     tree, _, _ = create_tree_with_scrollbars(list_frame, columns)
 
-    for col in columns:
-        tree.heading(col, text=col)
-    tree.column("D", width=70, anchor="center")
-    tree.column("Nome", width=180, anchor="w")
-    tree.column("E-mail/Usuário", width=240, anchor="w")
-    tree.column("Situação", width=100, anchor="center")
-    tree.column("Ações", width=220, anchor="w")
+    configure_tree_columns(
+        tree,
+        columns,
+        {
+            "D": 70,
+            "Nome": 180,
+            "E-mail/Usuario": 240,
+            "Situacao": 100,
+            "Acoes": 220,
+        },
+        {
+            "E-mail/Usuario": "E-mail/Usuário",
+            "Situacao": "Situação",
+            "Acoes": "Ações",
+        },
+    )
+    tree.column("D", anchor="center")
+    tree.column("Situacao", anchor="center")
 
     def on_select_row(values: tuple[str, ...]) -> None:
         d_var.set(str(values[0]))
@@ -798,7 +851,7 @@ def show_contatos_modal(parent: tk.Tk) -> None:
             tree.insert(
                 "",
                 "end",
-                values=(row["D"], row["Nome"], row["E-mail/Usuário"], row["Situação"], row["Ações"]),
+                values=(row["D"], row["Nome"], row["E-mail/Usuario"], row["Situacao"], row["Acoes"]),
             )
         sync_counter()
         items = tree.get_children()
@@ -858,20 +911,13 @@ def show_contatos_modal(parent: tk.Tk) -> None:
 
 def show_relatorio_contatos_modal(parent: tk.Tk) -> None:
     modal, body, content = create_modal(parent, "Relatório de Contatos")
+    modal.geometry("1180x680")
+    modal.minsize(1180, 680)
 
     filter_row = tk.Frame(content, bg=BG_SURFACE)
     filter_row.grid(row=0, column=0, sticky="ew", pady=(0, 10))
     for idx in range(4):
         filter_row.grid_columnconfigure(idx * 2 + 1, weight=1)
-
-    summary_label = tk.Label(
-        filter_row,
-        text="Registros relacionados: 0",
-        bg=BG_SURFACE,
-        fg=TEXT_SECONDARY,
-        font=("Segoe UI", 9, "bold"),
-    )
-    summary_label.grid(row=2, column=0, columnspan=8, sticky="w", pady=(6, 0))
 
     list_frame = tk.Frame(content, bg=BG_SURFACE)
     list_frame.grid(row=2, column=0, sticky="nsew")
@@ -880,8 +926,8 @@ def show_relatorio_contatos_modal(parent: tk.Tk) -> None:
 
     columns = (
         "Contato",
-        "E-mail/Usuário",
-        "Situação",
+        "E-mail/Usuario",
+        "Situacao",
         "Representante",
         "Fabricante",
         "Nome Fantasia",
@@ -889,31 +935,37 @@ def show_relatorio_contatos_modal(parent: tk.Tk) -> None:
     )
     tree, _, _ = create_tree_with_scrollbars(list_frame, columns)
 
-    widths = {
+    configure_tree_columns(
+        tree,
+        columns,
+        {
         "Contato": 160,
-        "E-mail/Usuário": 220,
-        "Situação": 90,
+        "E-mail/Usuario": 220,
+        "Situacao": 90,
         "Representante": 180,
         "Fabricante": 220,
         "Nome Fantasia": 160,
         "Marca": 160,
-    }
-    for col in columns:
-        tree.heading(col, text=col)
-        tree.column(col, width=widths[col], anchor="w")
+        },
+        {
+            "E-mail/Usuario": "E-mail/Usuário",
+            "Situacao": "Situação",
+        },
+    )
 
     raw_rows = database.fetch_relatorio_contatos()
     filter_specs = (
         ("Contato", "Contato"),
-        ("Situação", "Situação"),
+        ("Situação", "Situacao"),
         ("Representante", "Representante"),
         ("Fabricante", "Fabricante"),
         ("Nome Fantasia", "Nome Fantasia"),
         ("Marca", "Marca"),
-        ("E-mail/Usuário", "E-mail/Usuário"),
+        ("E-mail/Usuário", "E-mail/Usuario"),
     )
-    filter_vars: dict[str, tk.StringVar] = {}
-    filter_boxes: list[ttk.Combobox] = []
+    filter_state = {row_key: set() for _, row_key in filter_specs}
+    filter_labels: dict[str, tk.Label] = {}
+    filter_options: dict[str, list[str]] = {row_key: [] for _, row_key in filter_specs}
 
     for idx, (label_text, row_key) in enumerate(filter_specs):
         row_no = idx // 4
@@ -926,19 +978,69 @@ def show_relatorio_contatos_modal(parent: tk.Tk) -> None:
             font=("Segoe UI", 10, "bold"),
         ).grid(row=row_no, column=col_no, sticky="w", padx=(0, 8), pady=4)
 
-        values = ["Todos"] + sorted({str(row[row_key]) for row in raw_rows})
-        filter_var = tk.StringVar(value="Todos")
-        filter_vars[row_key] = filter_var
-        filter_box = ttk.Combobox(filter_row, textvariable=filter_var, values=values, state="readonly")
-        filter_box.grid(row=row_no, column=col_no + 1, sticky="ew", padx=(0, 12), pady=4, ipady=2)
-        filter_boxes.append(filter_box)
+        cell = tk.Frame(filter_row, bg=BG_SURFACE)
+        cell.grid(row=row_no, column=col_no + 1, sticky="ew", padx=(0, 12), pady=4)
+        cell.grid_columnconfigure(0, weight=1)
+
+        summary = tk.Label(
+            cell,
+            text="Todos",
+            bg=BG_SURFACE,
+            fg=TEXT_SECONDARY,
+            anchor="w",
+            font=("Segoe UI", 9),
+        )
+        summary.grid(row=0, column=0, sticky="ew")
+        filter_labels[row_key] = summary
+
+        def make_open_filter(key: str, title: str) -> callable:
+            def open_filter() -> None:
+                open_multi_select_dialog(
+                    modal,
+                    f"Filtro: {title}",
+                    filter_options[key],
+                    filter_state[key],
+                    lambda values: apply_filter(key, values),
+                )
+            return open_filter
+
+        btn_filter = tk.Button(
+            cell,
+            text="Selecionar",
+            command=make_open_filter(row_key, label_text),
+            bg="#0f172a",
+            fg=TEXT_PRIMARY,
+            activebackground=ACCENT,
+            activeforeground="#0b1220",
+            relief="flat",
+            bd=0,
+            cursor="hand2",
+            padx=8,
+            pady=6,
+            font=("Segoe UI", 9, "bold"),
+        )
+        btn_filter.grid(row=1, column=0, sticky="w", pady=(4, 0))
+        style_hover_button(btn_filter, "#0f172a", "#1e293b")
+
+    summary_label = tk.Label(
+        filter_row,
+        text="Registros relacionados: 0",
+        bg=BG_SURFACE,
+        fg=TEXT_SECONDARY,
+        font=("Segoe UI", 9, "bold"),
+    )
+    summary_label.grid(row=2, column=0, columnspan=8, sticky="w", pady=(8, 0))
 
     def refresh_tree(*_args: object) -> None:
-        rows = raw_rows
-        for row_key, filter_var in filter_vars.items():
-            selected_value = filter_var.get().strip()
-            if selected_value and selected_value != "Todos":
-                rows = [row for row in rows if str(row[row_key]) == selected_value]
+        for _, row_key in filter_specs:
+            filter_options[row_key] = []
+
+        refreshed_options = refresh_sequential_filter_options(raw_rows, filter_specs, filter_state)
+        for _, row_key in filter_specs:
+            filter_options[row_key] = refreshed_options[row_key]
+            filter_labels[row_key].config(text=summarize_selected_values(filter_state[row_key]))
+
+        rows = apply_sequential_filters(raw_rows, filter_specs, filter_state)
         for item in tree.get_children():
             tree.delete(item)
         for row in rows:
@@ -947,8 +1049,8 @@ def show_relatorio_contatos_modal(parent: tk.Tk) -> None:
                 "end",
                 values=(
                     row["Contato"],
-                    row["E-mail/Usuário"],
-                    row["Situação"],
+                    row["E-mail/Usuario"],
+                    row["Situacao"],
                     row["Representante"],
                     row["Fabricante"],
                     row["Nome Fantasia"],
@@ -957,8 +1059,33 @@ def show_relatorio_contatos_modal(parent: tk.Tk) -> None:
             )
         summary_label.config(text=f"Registros relacionados: {len(rows)}")
 
-    for filter_box in filter_boxes:
-        filter_box.bind("<<ComboboxSelected>>", refresh_tree)
+    def apply_filter(row_key: str, values: set[str]) -> None:
+        filter_state[row_key] = values
+        refresh_tree()
+
+    btn_clear_filters = tk.Button(
+        filter_row,
+        text="Limpar filtros",
+        command=lambda: clear_filters(),
+        bg="#334155",
+        fg=TEXT_PRIMARY,
+        activebackground="#475569",
+        activeforeground=TEXT_PRIMARY,
+        relief="flat",
+        bd=0,
+        cursor="hand2",
+        padx=12,
+        pady=6,
+        font=("Segoe UI", 9, "bold"),
+    )
+    btn_clear_filters.grid(row=2, column=7, sticky="e", pady=(6, 0))
+    style_hover_button(btn_clear_filters, "#334155", "#475569")
+
+    def clear_filters() -> None:
+        for _, row_key in filter_specs:
+            filter_state[row_key] = set()
+        refresh_tree()
+
     create_action_buttons(body, refresh_tree, modal.destroy)
     refresh_tree()
     modal.wait_window()
@@ -966,20 +1093,13 @@ def show_relatorio_contatos_modal(parent: tk.Tk) -> None:
 
 def show_relatorio_contatos_produtos_modal(parent: tk.Tk) -> None:
     modal, body, content = create_modal(parent, "Relatório de Contatos x Produtos")
+    modal.geometry("1280x720")
+    modal.minsize(1280, 720)
 
     filter_row = tk.Frame(content, bg=BG_SURFACE)
     filter_row.grid(row=0, column=0, sticky="ew", pady=(0, 10))
-    for idx in range(3):
+    for idx in range(4):
         filter_row.grid_columnconfigure(idx * 2 + 1, weight=1)
-
-    summary_label = tk.Label(
-        filter_row,
-        text="Registros em tela: 0",
-        bg=BG_SURFACE,
-        fg=TEXT_SECONDARY,
-        font=("Segoe UI", 9, "bold"),
-    )
-    summary_label.grid(row=2, column=0, columnspan=6, sticky="w", pady=(8, 0))
 
     list_frame = tk.Frame(content, bg=BG_SURFACE)
     list_frame.grid(row=2, column=0, sticky="nsew")
@@ -988,7 +1108,7 @@ def show_relatorio_contatos_produtos_modal(parent: tk.Tk) -> None:
 
     columns = (
         "Nome",
-        "E-mail/Usuário",
+        "E-mail/Usuario",
         "CD_FORNEC",
         "Nome Fantasia",
         "MARCA",
@@ -1000,9 +1120,12 @@ def show_relatorio_contatos_produtos_modal(parent: tk.Tk) -> None:
     )
     tree, _, _ = create_tree_with_scrollbars(list_frame, columns)
 
-    widths = {
+    configure_tree_columns(
+        tree,
+        columns,
+        {
         "Nome": 180,
-        "E-mail/Usuário": 240,
+        "E-mail/Usuario": 240,
         "CD_FORNEC": 90,
         "Nome Fantasia": 180,
         "MARCA": 170,
@@ -1011,10 +1134,14 @@ def show_relatorio_contatos_produtos_modal(parent: tk.Tk) -> None:
         "DESCRICAO": 320,
         "VALOR UNITARIO": 120,
         "FATOR EMBALAGEM": 130,
-    }
-    for col in columns:
-        tree.heading(col, text=col)
-        tree.column(col, width=widths[col], anchor="w")
+        },
+        {
+            "E-mail/Usuario": "E-mail/Usuário",
+            "DESCRICAO": "Descrição",
+            "VALOR UNITARIO": "Valor Unitário",
+            "FATOR EMBALAGEM": "Fator Embalagem",
+        },
+    )
 
     try:
         raw_rows = database.fetch_relatorio_contatos_produtos()
@@ -1032,10 +1159,17 @@ def show_relatorio_contatos_produtos_modal(parent: tk.Tk) -> None:
     filter_state = {row_key: set() for _, row_key in filter_specs}
     filter_labels: dict[str, tk.Label] = {}
     current_rows: list[dict[str, object]] = []
+    filter_options: dict[str, list[str]] = {row_key: [] for _, row_key in filter_specs}
+
+    def refresh_filter_options() -> None:
+        refreshed_options = refresh_sequential_filter_options(raw_rows, filter_specs, filter_state)
+        for _, row_key in filter_specs:
+            filter_options[row_key] = refreshed_options[row_key]
+            filter_labels[row_key].config(text=summarize_selected_values(filter_state[row_key]))
 
     for idx, (label_text, row_key) in enumerate(filter_specs):
-        row_no = idx // 3
-        col_no = (idx % 3) * 2
+        row_no = 0
+        col_no = idx * 2
 
         tk.Label(
             filter_row,
@@ -1060,14 +1194,12 @@ def show_relatorio_contatos_produtos_modal(parent: tk.Tk) -> None:
         summary.grid(row=0, column=0, sticky="ew")
         filter_labels[row_key] = summary
 
-        options = sorted({str(row.get(row_key, "")) for row in raw_rows})
-
-        def make_open_filter(key: str, title: str, available_options: list[str]) -> callable:
+        def make_open_filter(key: str, title: str) -> callable:
             def open_filter() -> None:
                 open_multi_select_dialog(
                     modal,
                     f"Filtro: {title}",
-                    available_options,
+                    filter_options[key],
                     filter_state[key],
                     lambda values: apply_filter(key, values),
                 )
@@ -1076,7 +1208,7 @@ def show_relatorio_contatos_produtos_modal(parent: tk.Tk) -> None:
         btn_filter = tk.Button(
             cell,
             text="Selecionar",
-            command=make_open_filter(row_key, label_text, options),
+            command=make_open_filter(row_key, label_text),
             bg="#0f172a",
             fg=TEXT_PRIMARY,
             activebackground=ACCENT,
@@ -1091,11 +1223,36 @@ def show_relatorio_contatos_produtos_modal(parent: tk.Tk) -> None:
         btn_filter.grid(row=1, column=0, sticky="w", pady=(4, 0))
         style_hover_button(btn_filter, "#0f172a", "#1e293b")
 
+    summary_label = tk.Label(
+        filter_row,
+        text="Registros em tela: 0",
+        bg=BG_SURFACE,
+        fg=TEXT_SECONDARY,
+        font=("Segoe UI", 9, "bold"),
+    )
+    summary_label.grid(row=1, column=0, columnspan=8, sticky="w", pady=(10, 0))
+
+    btn_clear_filters = tk.Button(
+        filter_row,
+        text="Limpar filtros",
+        command=lambda: clear_filters(),
+        bg="#334155",
+        fg=TEXT_PRIMARY,
+        activebackground="#475569",
+        activeforeground=TEXT_PRIMARY,
+        relief="flat",
+        bd=0,
+        cursor="hand2",
+        padx=12,
+        pady=6,
+        font=("Segoe UI", 9, "bold"),
+    )
+    btn_clear_filters.grid(row=1, column=7, sticky="e", pady=(10, 0))
+    style_hover_button(btn_clear_filters, "#334155", "#475569")
+
     def refresh_tree() -> None:
-        rows = raw_rows
-        for row_key, selected_values in filter_state.items():
-            if selected_values:
-                rows = [row for row in rows if str(row.get(row_key, "")) in selected_values]
+        refresh_filter_options()
+        rows = apply_sequential_filters(raw_rows, filter_specs, filter_state)
 
         current_rows.clear()
         current_rows.extend(rows)
@@ -1110,7 +1267,11 @@ def show_relatorio_contatos_produtos_modal(parent: tk.Tk) -> None:
 
     def apply_filter(row_key: str, values: set[str]) -> None:
         filter_state[row_key] = values
-        filter_labels[row_key].config(text=summarize_selected_values(values))
+        refresh_tree()
+
+    def clear_filters() -> None:
+        for _, row_key in filter_specs:
+            filter_state[row_key] = set()
         refresh_tree()
 
     footer = tk.Frame(body, bg=BG_APP)
