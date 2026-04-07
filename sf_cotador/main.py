@@ -71,36 +71,6 @@ def summarize_selected_values(selected_values: set[str]) -> str:
     return f"{len(selected_values)} selecionados"
 
 
-def apply_sequential_filters(
-    rows: list[dict[str, object]],
-    filter_specs: tuple[tuple[str, str], ...],
-    filter_state: dict[str, set[str]],
-    limit_row_key: str | None = None,
-) -> list[dict[str, object]]:
-    filtered_rows = rows
-    for _, row_key in filter_specs:
-        if limit_row_key is not None and row_key == limit_row_key:
-            break
-        selected_values = filter_state.get(row_key, set())
-        if selected_values:
-            filtered_rows = [row for row in filtered_rows if str(row.get(row_key, "")) in selected_values]
-    return filtered_rows
-
-
-def refresh_sequential_filter_options(
-    rows: list[dict[str, object]],
-    filter_specs: tuple[tuple[str, str], ...],
-    filter_state: dict[str, set[str]],
-) -> dict[str, list[str]]:
-    filter_options: dict[str, list[str]] = {}
-    for _, row_key in filter_specs:
-        available_rows = apply_sequential_filters(rows, filter_specs, filter_state, limit_row_key=row_key)
-        available_options = sorted({str(row.get(row_key, "")) for row in available_rows})
-        filter_options[row_key] = available_options
-        filter_state[row_key] = {value for value in filter_state[row_key] if value in available_options}
-    return filter_options
-
-
 def open_multi_select_dialog(
     parent: tk.Toplevel,
     title: str,
@@ -365,6 +335,25 @@ def export_rows(rows: list[dict[str, object]], columns: tuple[str, ...], parent:
         return
 
     messagebox.showinfo("Exportação", "Arquivo exportado com sucesso.", parent=parent)
+
+
+def parse_clipboard_table(clipboard_text: str, expected_columns: tuple[str, ...]) -> list[dict[str, str]]:
+    rows: list[dict[str, str]] = []
+    normalized_expected = [column.strip().casefold() for column in expected_columns]
+
+    for line_index, line in enumerate(clipboard_text.splitlines()):
+        if not line.strip():
+            continue
+        values = [value.strip() for value in line.split("\t")]
+        normalized_values = [value.casefold() for value in values[: len(expected_columns)]]
+        if line_index == 0 and normalized_values == normalized_expected:
+            continue
+        if len(values) < len(expected_columns):
+            values.extend([""] * (len(expected_columns) - len(values)))
+        elif len(values) > len(expected_columns):
+            values = values[: len(expected_columns)]
+        rows.append(dict(zip(expected_columns, values)))
+    return rows
 
 
 def create_modal(parent: tk.Tk, title: str) -> tuple[tk.Toplevel, tk.Frame, tk.Frame]:
@@ -813,27 +802,16 @@ def show_contatos_modal(parent: tk.Tk) -> None:
     list_frame.grid_rowconfigure(0, weight=1)
     list_frame.grid_columnconfigure(0, weight=1)
 
-    columns = ("D", "Nome", "E-mail/Usuario", "Situacao", "Acoes")
+    columns = ("D", "Nome", "E-mail/Usuário", "Situação", "Ações")
     tree, _, _ = create_tree_with_scrollbars(list_frame, columns)
 
-    configure_tree_columns(
-        tree,
-        columns,
-        {
-            "D": 70,
-            "Nome": 180,
-            "E-mail/Usuario": 240,
-            "Situacao": 100,
-            "Acoes": 220,
-        },
-        {
-            "E-mail/Usuario": "E-mail/Usuário",
-            "Situacao": "Situação",
-            "Acoes": "Ações",
-        },
-    )
-    tree.column("D", anchor="center")
-    tree.column("Situacao", anchor="center")
+    for col in columns:
+        tree.heading(col, text=col)
+    tree.column("D", width=70, anchor="center")
+    tree.column("Nome", width=180, anchor="w")
+    tree.column("E-mail/Usuário", width=240, anchor="w")
+    tree.column("Situação", width=100, anchor="center")
+    tree.column("Ações", width=220, anchor="w")
 
     def on_select_row(values: tuple[str, ...]) -> None:
         d_var.set(str(values[0]))
@@ -851,7 +829,7 @@ def show_contatos_modal(parent: tk.Tk) -> None:
             tree.insert(
                 "",
                 "end",
-                values=(row["D"], row["Nome"], row["E-mail/Usuario"], row["Situacao"], row["Acoes"]),
+                values=(row["D"], row["Nome"], row["E-mail/Usuário"], row["Situação"], row["Ações"]),
             )
         sync_counter()
         items = tree.get_children()
@@ -911,13 +889,20 @@ def show_contatos_modal(parent: tk.Tk) -> None:
 
 def show_relatorio_contatos_modal(parent: tk.Tk) -> None:
     modal, body, content = create_modal(parent, "Relatório de Contatos")
-    modal.geometry("1180x680")
-    modal.minsize(1180, 680)
 
     filter_row = tk.Frame(content, bg=BG_SURFACE)
     filter_row.grid(row=0, column=0, sticky="ew", pady=(0, 10))
     for idx in range(4):
         filter_row.grid_columnconfigure(idx * 2 + 1, weight=1)
+
+    summary_label = tk.Label(
+        filter_row,
+        text="Registros relacionados: 0",
+        bg=BG_SURFACE,
+        fg=TEXT_SECONDARY,
+        font=("Segoe UI", 9, "bold"),
+    )
+    summary_label.grid(row=2, column=0, columnspan=8, sticky="w", pady=(6, 0))
 
     list_frame = tk.Frame(content, bg=BG_SURFACE)
     list_frame.grid(row=2, column=0, sticky="nsew")
@@ -926,8 +911,8 @@ def show_relatorio_contatos_modal(parent: tk.Tk) -> None:
 
     columns = (
         "Contato",
-        "E-mail/Usuario",
-        "Situacao",
+        "E-mail/Usuário",
+        "Situação",
         "Representante",
         "Fabricante",
         "Nome Fantasia",
@@ -935,37 +920,31 @@ def show_relatorio_contatos_modal(parent: tk.Tk) -> None:
     )
     tree, _, _ = create_tree_with_scrollbars(list_frame, columns)
 
-    configure_tree_columns(
-        tree,
-        columns,
-        {
+    widths = {
         "Contato": 160,
-        "E-mail/Usuario": 220,
-        "Situacao": 90,
+        "E-mail/Usuário": 220,
+        "Situação": 90,
         "Representante": 180,
         "Fabricante": 220,
         "Nome Fantasia": 160,
         "Marca": 160,
-        },
-        {
-            "E-mail/Usuario": "E-mail/Usuário",
-            "Situacao": "Situação",
-        },
-    )
+    }
+    for col in columns:
+        tree.heading(col, text=col)
+        tree.column(col, width=widths[col], anchor="w")
 
     raw_rows = database.fetch_relatorio_contatos()
     filter_specs = (
         ("Contato", "Contato"),
-        ("Situação", "Situacao"),
+        ("Situação", "Situação"),
         ("Representante", "Representante"),
         ("Fabricante", "Fabricante"),
         ("Nome Fantasia", "Nome Fantasia"),
         ("Marca", "Marca"),
-        ("E-mail/Usuário", "E-mail/Usuario"),
+        ("E-mail/Usuário", "E-mail/Usuário"),
     )
-    filter_state = {row_key: set() for _, row_key in filter_specs}
-    filter_labels: dict[str, tk.Label] = {}
-    filter_options: dict[str, list[str]] = {row_key: [] for _, row_key in filter_specs}
+    filter_vars: dict[str, tk.StringVar] = {}
+    filter_boxes: list[ttk.Combobox] = []
 
     for idx, (label_text, row_key) in enumerate(filter_specs):
         row_no = idx // 4
@@ -978,69 +957,19 @@ def show_relatorio_contatos_modal(parent: tk.Tk) -> None:
             font=("Segoe UI", 10, "bold"),
         ).grid(row=row_no, column=col_no, sticky="w", padx=(0, 8), pady=4)
 
-        cell = tk.Frame(filter_row, bg=BG_SURFACE)
-        cell.grid(row=row_no, column=col_no + 1, sticky="ew", padx=(0, 12), pady=4)
-        cell.grid_columnconfigure(0, weight=1)
-
-        summary = tk.Label(
-            cell,
-            text="Todos",
-            bg=BG_SURFACE,
-            fg=TEXT_SECONDARY,
-            anchor="w",
-            font=("Segoe UI", 9),
-        )
-        summary.grid(row=0, column=0, sticky="ew")
-        filter_labels[row_key] = summary
-
-        def make_open_filter(key: str, title: str) -> callable:
-            def open_filter() -> None:
-                open_multi_select_dialog(
-                    modal,
-                    f"Filtro: {title}",
-                    filter_options[key],
-                    filter_state[key],
-                    lambda values: apply_filter(key, values),
-                )
-            return open_filter
-
-        btn_filter = tk.Button(
-            cell,
-            text="Selecionar",
-            command=make_open_filter(row_key, label_text),
-            bg="#0f172a",
-            fg=TEXT_PRIMARY,
-            activebackground=ACCENT,
-            activeforeground="#0b1220",
-            relief="flat",
-            bd=0,
-            cursor="hand2",
-            padx=8,
-            pady=6,
-            font=("Segoe UI", 9, "bold"),
-        )
-        btn_filter.grid(row=1, column=0, sticky="w", pady=(4, 0))
-        style_hover_button(btn_filter, "#0f172a", "#1e293b")
-
-    summary_label = tk.Label(
-        filter_row,
-        text="Registros relacionados: 0",
-        bg=BG_SURFACE,
-        fg=TEXT_SECONDARY,
-        font=("Segoe UI", 9, "bold"),
-    )
-    summary_label.grid(row=2, column=0, columnspan=8, sticky="w", pady=(8, 0))
+        values = ["Todos"] + sorted({str(row[row_key]) for row in raw_rows})
+        filter_var = tk.StringVar(value="Todos")
+        filter_vars[row_key] = filter_var
+        filter_box = ttk.Combobox(filter_row, textvariable=filter_var, values=values, state="readonly")
+        filter_box.grid(row=row_no, column=col_no + 1, sticky="ew", padx=(0, 12), pady=4, ipady=2)
+        filter_boxes.append(filter_box)
 
     def refresh_tree(*_args: object) -> None:
-        for _, row_key in filter_specs:
-            filter_options[row_key] = []
-
-        refreshed_options = refresh_sequential_filter_options(raw_rows, filter_specs, filter_state)
-        for _, row_key in filter_specs:
-            filter_options[row_key] = refreshed_options[row_key]
-            filter_labels[row_key].config(text=summarize_selected_values(filter_state[row_key]))
-
-        rows = apply_sequential_filters(raw_rows, filter_specs, filter_state)
+        rows = raw_rows
+        for row_key, filter_var in filter_vars.items():
+            selected_value = filter_var.get().strip()
+            if selected_value and selected_value != "Todos":
+                rows = [row for row in rows if str(row[row_key]) == selected_value]
         for item in tree.get_children():
             tree.delete(item)
         for row in rows:
@@ -1049,8 +978,8 @@ def show_relatorio_contatos_modal(parent: tk.Tk) -> None:
                 "end",
                 values=(
                     row["Contato"],
-                    row["E-mail/Usuario"],
-                    row["Situacao"],
+                    row["E-mail/Usuário"],
+                    row["Situação"],
                     row["Representante"],
                     row["Fabricante"],
                     row["Nome Fantasia"],
@@ -1059,33 +988,8 @@ def show_relatorio_contatos_modal(parent: tk.Tk) -> None:
             )
         summary_label.config(text=f"Registros relacionados: {len(rows)}")
 
-    def apply_filter(row_key: str, values: set[str]) -> None:
-        filter_state[row_key] = values
-        refresh_tree()
-
-    btn_clear_filters = tk.Button(
-        filter_row,
-        text="Limpar filtros",
-        command=lambda: clear_filters(),
-        bg="#334155",
-        fg=TEXT_PRIMARY,
-        activebackground="#475569",
-        activeforeground=TEXT_PRIMARY,
-        relief="flat",
-        bd=0,
-        cursor="hand2",
-        padx=12,
-        pady=6,
-        font=("Segoe UI", 9, "bold"),
-    )
-    btn_clear_filters.grid(row=2, column=7, sticky="e", pady=(6, 0))
-    style_hover_button(btn_clear_filters, "#334155", "#475569")
-
-    def clear_filters() -> None:
-        for _, row_key in filter_specs:
-            filter_state[row_key] = set()
-        refresh_tree()
-
+    for filter_box in filter_boxes:
+        filter_box.bind("<<ComboboxSelected>>", refresh_tree)
     create_action_buttons(body, refresh_tree, modal.destroy)
     refresh_tree()
     modal.wait_window()
@@ -1093,13 +997,20 @@ def show_relatorio_contatos_modal(parent: tk.Tk) -> None:
 
 def show_relatorio_contatos_produtos_modal(parent: tk.Tk) -> None:
     modal, body, content = create_modal(parent, "Relatório de Contatos x Produtos")
-    modal.geometry("1280x720")
-    modal.minsize(1280, 720)
 
     filter_row = tk.Frame(content, bg=BG_SURFACE)
     filter_row.grid(row=0, column=0, sticky="ew", pady=(0, 10))
-    for idx in range(4):
+    for idx in range(3):
         filter_row.grid_columnconfigure(idx * 2 + 1, weight=1)
+
+    summary_label = tk.Label(
+        filter_row,
+        text="Registros em tela: 0",
+        bg=BG_SURFACE,
+        fg=TEXT_SECONDARY,
+        font=("Segoe UI", 9, "bold"),
+    )
+    summary_label.grid(row=2, column=0, columnspan=6, sticky="w", pady=(8, 0))
 
     list_frame = tk.Frame(content, bg=BG_SURFACE)
     list_frame.grid(row=2, column=0, sticky="nsew")
@@ -1108,7 +1019,7 @@ def show_relatorio_contatos_produtos_modal(parent: tk.Tk) -> None:
 
     columns = (
         "Nome",
-        "E-mail/Usuario",
+        "E-mail/Usuário",
         "CD_FORNEC",
         "Nome Fantasia",
         "MARCA",
@@ -1120,12 +1031,9 @@ def show_relatorio_contatos_produtos_modal(parent: tk.Tk) -> None:
     )
     tree, _, _ = create_tree_with_scrollbars(list_frame, columns)
 
-    configure_tree_columns(
-        tree,
-        columns,
-        {
+    widths = {
         "Nome": 180,
-        "E-mail/Usuario": 240,
+        "E-mail/Usuário": 240,
         "CD_FORNEC": 90,
         "Nome Fantasia": 180,
         "MARCA": 170,
@@ -1134,14 +1042,10 @@ def show_relatorio_contatos_produtos_modal(parent: tk.Tk) -> None:
         "DESCRICAO": 320,
         "VALOR UNITARIO": 120,
         "FATOR EMBALAGEM": 130,
-        },
-        {
-            "E-mail/Usuario": "E-mail/Usuário",
-            "DESCRICAO": "Descrição",
-            "VALOR UNITARIO": "Valor Unitário",
-            "FATOR EMBALAGEM": "Fator Embalagem",
-        },
-    )
+    }
+    for col in columns:
+        tree.heading(col, text=col)
+        tree.column(col, width=widths[col], anchor="w")
 
     try:
         raw_rows = database.fetch_relatorio_contatos_produtos()
@@ -1159,17 +1063,10 @@ def show_relatorio_contatos_produtos_modal(parent: tk.Tk) -> None:
     filter_state = {row_key: set() for _, row_key in filter_specs}
     filter_labels: dict[str, tk.Label] = {}
     current_rows: list[dict[str, object]] = []
-    filter_options: dict[str, list[str]] = {row_key: [] for _, row_key in filter_specs}
-
-    def refresh_filter_options() -> None:
-        refreshed_options = refresh_sequential_filter_options(raw_rows, filter_specs, filter_state)
-        for _, row_key in filter_specs:
-            filter_options[row_key] = refreshed_options[row_key]
-            filter_labels[row_key].config(text=summarize_selected_values(filter_state[row_key]))
 
     for idx, (label_text, row_key) in enumerate(filter_specs):
-        row_no = 0
-        col_no = idx * 2
+        row_no = idx // 3
+        col_no = (idx % 3) * 2
 
         tk.Label(
             filter_row,
@@ -1194,12 +1091,14 @@ def show_relatorio_contatos_produtos_modal(parent: tk.Tk) -> None:
         summary.grid(row=0, column=0, sticky="ew")
         filter_labels[row_key] = summary
 
-        def make_open_filter(key: str, title: str) -> callable:
+        options = sorted({str(row.get(row_key, "")) for row in raw_rows})
+
+        def make_open_filter(key: str, title: str, available_options: list[str]) -> callable:
             def open_filter() -> None:
                 open_multi_select_dialog(
                     modal,
                     f"Filtro: {title}",
-                    filter_options[key],
+                    available_options,
                     filter_state[key],
                     lambda values: apply_filter(key, values),
                 )
@@ -1208,7 +1107,7 @@ def show_relatorio_contatos_produtos_modal(parent: tk.Tk) -> None:
         btn_filter = tk.Button(
             cell,
             text="Selecionar",
-            command=make_open_filter(row_key, label_text),
+            command=make_open_filter(row_key, label_text, options),
             bg="#0f172a",
             fg=TEXT_PRIMARY,
             activebackground=ACCENT,
@@ -1223,36 +1122,11 @@ def show_relatorio_contatos_produtos_modal(parent: tk.Tk) -> None:
         btn_filter.grid(row=1, column=0, sticky="w", pady=(4, 0))
         style_hover_button(btn_filter, "#0f172a", "#1e293b")
 
-    summary_label = tk.Label(
-        filter_row,
-        text="Registros em tela: 0",
-        bg=BG_SURFACE,
-        fg=TEXT_SECONDARY,
-        font=("Segoe UI", 9, "bold"),
-    )
-    summary_label.grid(row=1, column=0, columnspan=8, sticky="w", pady=(10, 0))
-
-    btn_clear_filters = tk.Button(
-        filter_row,
-        text="Limpar filtros",
-        command=lambda: clear_filters(),
-        bg="#334155",
-        fg=TEXT_PRIMARY,
-        activebackground="#475569",
-        activeforeground=TEXT_PRIMARY,
-        relief="flat",
-        bd=0,
-        cursor="hand2",
-        padx=12,
-        pady=6,
-        font=("Segoe UI", 9, "bold"),
-    )
-    btn_clear_filters.grid(row=1, column=7, sticky="e", pady=(10, 0))
-    style_hover_button(btn_clear_filters, "#334155", "#475569")
-
     def refresh_tree() -> None:
-        refresh_filter_options()
-        rows = apply_sequential_filters(raw_rows, filter_specs, filter_state)
+        rows = raw_rows
+        for row_key, selected_values in filter_state.items():
+            if selected_values:
+                rows = [row for row in rows if str(row.get(row_key, "")) in selected_values]
 
         current_rows.clear()
         current_rows.extend(rows)
@@ -1267,11 +1141,7 @@ def show_relatorio_contatos_produtos_modal(parent: tk.Tk) -> None:
 
     def apply_filter(row_key: str, values: set[str]) -> None:
         filter_state[row_key] = values
-        refresh_tree()
-
-    def clear_filters() -> None:
-        for _, row_key in filter_specs:
-            filter_state[row_key] = set()
+        filter_labels[row_key].config(text=summarize_selected_values(values))
         refresh_tree()
 
     footer = tk.Frame(body, bg=BG_APP)
@@ -1318,6 +1188,814 @@ def show_relatorio_contatos_produtos_modal(parent: tk.Tk) -> None:
     style_hover_button(btn_close, "#334155", "#475569")
 
     refresh_tree()
+    modal.wait_window()
+
+
+def show_cotacoes_captadas_modal(parent: tk.Tk) -> None:
+    modal, body, content = create_modal(parent, "Carga de Cotacoes")
+
+    filter_row = tk.Frame(content, bg=BG_SURFACE)
+    filter_row.grid(row=0, column=0, sticky="ew", pady=(0, 10))
+    for idx in range(2):
+        filter_row.grid_columnconfigure(idx * 2 + 1, weight=1)
+
+    tk.Label(
+        filter_row,
+        text='Cole da planilha Excel usando Ctrl+C e use "Colar da Area de Transferencia".',
+        bg=BG_SURFACE,
+        fg=TEXT_SECONDARY,
+        anchor="w",
+        font=("Segoe UI", 9),
+    ).grid(row=0, column=0, columnspan=4, sticky="w", pady=(0, 10))
+
+    list_frame = tk.Frame(content, bg=BG_SURFACE)
+    list_frame.grid(row=2, column=0, sticky="nsew")
+    list_frame.grid_rowconfigure(0, weight=1)
+    list_frame.grid_columnconfigure(0, weight=1)
+
+    columns = (
+        "Nome",
+        "E-mail/Usuario",
+        "CD_FORNEC",
+        "Nome Fantasia",
+        "MARCA",
+        "CD_PROD",
+        "EAN",
+        "DESCRICAO",
+        "VALOR UNITARIO",
+        "FATOR EMBALAGEM",
+        "VALIDADE PRECO",
+    )
+    tree, _, _ = create_tree_with_scrollbars(list_frame, columns)
+    configure_tree_columns(
+        tree,
+        columns,
+        {
+            "Nome": 180,
+            "E-mail/Usuario": 240,
+            "CD_FORNEC": 90,
+            "Nome Fantasia": 180,
+            "MARCA": 170,
+            "CD_PROD": 90,
+            "EAN": 130,
+            "DESCRICAO": 320,
+            "VALOR UNITARIO": 120,
+            "FATOR EMBALAGEM": 130,
+            "VALIDADE PRECO": 120,
+        },
+    )
+
+    raw_rows = database.fetch_cotacoes_captadas()
+    current_rows: list[dict[str, object]] = []
+    filter_specs = (
+        ("Nome Fantasia", "Nome Fantasia"),
+        ("Validade Preco", "VALIDADE PRECO"),
+    )
+    filter_state = {row_key: set() for _, row_key in filter_specs}
+    filter_labels: dict[str, tk.Label] = {}
+    filter_options: dict[str, list[str]] = {row_key: [] for _, row_key in filter_specs}
+
+    for idx, (label_text, row_key) in enumerate(filter_specs):
+        col_no = idx * 2
+        tk.Label(filter_row, text=label_text, bg=BG_SURFACE, fg=TEXT_PRIMARY, font=("Segoe UI", 10, "bold")).grid(
+            row=1, column=col_no, sticky="w", padx=(0, 8), pady=4
+        )
+        cell = tk.Frame(filter_row, bg=BG_SURFACE)
+        cell.grid(row=1, column=col_no + 1, sticky="ew", padx=(0, 12), pady=4)
+        cell.grid_columnconfigure(0, weight=1)
+        summary = tk.Label(cell, text="Todos", bg=BG_SURFACE, fg=TEXT_SECONDARY, anchor="w", font=("Segoe UI", 9))
+        summary.grid(row=0, column=0, sticky="ew")
+        filter_labels[row_key] = summary
+
+        def make_open_filter(key: str, title: str) -> callable:
+            def open_filter() -> None:
+                open_multi_select_dialog(modal, f"Filtro: {title}", filter_options[key], filter_state[key], lambda values: apply_filter(key, values))
+
+            return open_filter
+
+        btn_filter = tk.Button(
+            cell,
+            text="Selecionar",
+            command=make_open_filter(row_key, label_text),
+            bg="#0f172a",
+            fg=TEXT_PRIMARY,
+            activebackground=ACCENT,
+            activeforeground="#0b1220",
+            relief="flat",
+            bd=0,
+            cursor="hand2",
+            padx=8,
+            pady=6,
+            font=("Segoe UI", 9, "bold"),
+        )
+        btn_filter.grid(row=1, column=0, sticky="w", pady=(4, 0))
+        style_hover_button(btn_filter, "#0f172a", "#1e293b")
+
+    summary_label = tk.Label(filter_row, text="Registros carregados: 0", bg=BG_SURFACE, fg=TEXT_SECONDARY, font=("Segoe UI", 9, "bold"))
+    summary_label.grid(row=2, column=0, columnspan=3, sticky="w", pady=(8, 0))
+
+    def refresh_tree() -> None:
+        nonlocal raw_rows
+        raw_rows = database.fetch_cotacoes_captadas()
+        for _, row_key in filter_specs:
+            available_options = sorted({str(row.get(row_key, "")) for row in raw_rows})
+            filter_options[row_key] = available_options
+            filter_state[row_key] = {value for value in filter_state[row_key] if value in available_options}
+            filter_labels[row_key].config(text=summarize_selected_values(filter_state[row_key]))
+
+        rows = raw_rows
+        for _, row_key in filter_specs:
+            if filter_state[row_key]:
+                rows = [row for row in rows if str(row.get(row_key, "")) in filter_state[row_key]]
+
+        current_rows.clear()
+        current_rows.extend(rows)
+
+        for item in tree.get_children():
+            tree.delete(item)
+        for row in rows:
+            tree.insert("", "end", values=tuple(row.get(column, "") for column in columns))
+        summary_label.config(text=f"Registros carregados: {len(rows)}")
+
+    def apply_filter(row_key: str, values: set[str]) -> None:
+        filter_state[row_key] = values
+        refresh_tree()
+
+    def clear_filters() -> None:
+        for _, row_key in filter_specs:
+            filter_state[row_key] = set()
+        refresh_tree()
+
+    def carregar_area_transferencia() -> None:
+        try:
+            clipboard_text = modal.clipboard_get()
+        except tk.TclError:
+            messagebox.showerror("Area de transferencia", "Nao ha conteudo de texto na area de transferencia.", parent=modal)
+            return
+
+        rows = parse_clipboard_table(clipboard_text, columns)
+        if not rows:
+            messagebox.showerror("Dados invalidos", "Nenhuma linha valida foi encontrada para carregar.", parent=modal)
+            return
+
+        invalid_rows: list[int] = []
+        saved_count = 0
+        for idx, row in enumerate(rows, start=1):
+            if not row["Nome"] or not row["E-mail/Usuario"] or not row["EAN"] or not row["DESCRICAO"]:
+                invalid_rows.append(idx)
+                continue
+            try:
+                database.upsert_cotacao_captada(row)
+                saved_count += 1
+            except Exception:
+                invalid_rows.append(idx)
+
+        refresh_tree()
+        if invalid_rows:
+            messagebox.showwarning("Carga parcial", f"{saved_count} registro(s) gravado(s). Linhas ignoradas: {', '.join(str(n) for n in invalid_rows)}.", parent=modal)
+            return
+        messagebox.showinfo("Carga concluida", f"{saved_count} registro(s) gravado(s) com sucesso.", parent=modal)
+
+    def limpar_dados() -> None:
+        if not current_rows:
+            messagebox.showinfo("Limpar Dados", "Nao ha registros filtrados na tela para apagar.", parent=modal)
+            return
+        if not messagebox.askyesno("Limpar Dados", f"Deseja apagar {len(current_rows)} registro(s) exibido(s)?", parent=modal):
+            return
+        deleted_count = database.delete_cotacoes_captadas(current_rows)
+        refresh_tree()
+        messagebox.showinfo("Limpar Dados", f"{deleted_count} registro(s) apagado(s).", parent=modal)
+
+    footer = tk.Frame(body, bg=BG_APP)
+    footer.grid(row=2, column=0, sticky="ew", pady=(10, 0))
+    footer.grid_columnconfigure(0, weight=1)
+    footer_buttons = tk.Frame(footer, bg=BG_APP)
+    footer_buttons.grid(row=0, column=0, sticky="e")
+
+    button_specs = (
+        ("Colar da Area de Transferencia", carregar_area_transferencia, "#1f3b2d", "#2f5f45"),
+        ("Atualizar", refresh_tree, "#0f172a", "#1e293b"),
+        ("Limpar Dados", limpar_dados, "#7f1d1d", "#991b1b"),
+        ("Limpar Filtros", clear_filters, "#334155", "#475569"),
+        ("Fechar", modal.destroy, "#334155", "#475569"),
+    )
+    for text, command, bg_color, hover_color in button_specs:
+        btn = tk.Button(
+            footer_buttons,
+            text=text,
+            command=command,
+            bg=bg_color,
+            fg=TEXT_PRIMARY,
+            activebackground=hover_color if bg_color != "#0f172a" else ACCENT,
+            activeforeground=TEXT_PRIMARY if bg_color != "#0f172a" else "#0b1220",
+            relief="flat",
+            bd=0,
+            cursor="hand2",
+            padx=14,
+            pady=8,
+            font=("Segoe UI", 10, "bold"),
+        )
+        btn.pack(side="left", padx=(0, 8))
+        style_hover_button(btn, bg_color, hover_color)
+
+    refresh_tree()
+    modal.wait_window()
+
+
+def show_cs_compara_01_modal(parent: tk.Tk) -> None:
+    modal, body, content = create_modal(parent, "Analise CS_COMPARA_01")
+
+    filter_row = tk.Frame(content, bg=BG_SURFACE)
+    filter_row.grid(row=0, column=0, sticky="ew", pady=(0, 10))
+    for idx in range(4):
+        filter_row.grid_columnconfigure(idx * 2 + 1, weight=1)
+
+    list_frame = tk.Frame(content, bg=BG_SURFACE)
+    list_frame.grid(row=2, column=0, sticky="nsew")
+    list_frame.grid_rowconfigure(0, weight=1)
+    list_frame.grid_columnconfigure(0, weight=1)
+
+    columns = (
+        "CD_PROD",
+        "EAN",
+        "DESCRICAO",
+        "VALOR UNITARIO",
+        "FATOR EMBALAGEM",
+        "VALIDADE PRECO",
+        "ultimo_custo",
+        "valida_data",
+        "valor_cotado",
+        "compara_ult_custo",
+        "div_custo",
+        "ult_entrada_data",
+        "cod_produto",
+        "Nome",
+        "E-mail/Usuario",
+        "CD_FORNEC",
+        "Nome Fantasia",
+        "MARCA",
+    )
+    tree, _, _ = create_tree_with_scrollbars(list_frame, columns)
+    configure_tree_columns(tree, columns, {column: 130 for column in columns} | {"DESCRICAO": 260, "E-mail/Usuario": 220, "Nome Fantasia": 160})
+
+    raw_rows = database.fetch_cs_compara_01()
+    filter_specs = (
+        ("Fornecedor", "Nome Fantasia"),
+        ("Validacao", "valida_data"),
+        ("Divergencia", "div_custo"),
+        ("Marca", "MARCA"),
+    )
+    filter_state = {row_key: set() for _, row_key in filter_specs}
+    filter_labels: dict[str, tk.Label] = {}
+    current_rows: list[dict[str, object]] = []
+    filter_options: dict[str, list[str]] = {row_key: [] for _, row_key in filter_specs}
+
+    for idx, (label_text, row_key) in enumerate(filter_specs):
+        col_no = idx * 2
+        tk.Label(filter_row, text=label_text, bg=BG_SURFACE, fg=TEXT_PRIMARY, font=("Segoe UI", 10, "bold")).grid(
+            row=0, column=col_no, sticky="w", padx=(0, 8), pady=4
+        )
+        cell = tk.Frame(filter_row, bg=BG_SURFACE)
+        cell.grid(row=0, column=col_no + 1, sticky="ew", padx=(0, 12), pady=4)
+        cell.grid_columnconfigure(0, weight=1)
+        summary = tk.Label(cell, text="Todos", bg=BG_SURFACE, fg=TEXT_SECONDARY, anchor="w", font=("Segoe UI", 9))
+        summary.grid(row=0, column=0, sticky="ew")
+        filter_labels[row_key] = summary
+
+        def make_open_filter(key: str, title: str) -> callable:
+            def open_filter() -> None:
+                open_multi_select_dialog(modal, f"Filtro: {title}", filter_options[key], filter_state[key], lambda values: apply_filter(key, values))
+
+            return open_filter
+
+        btn = tk.Button(
+            cell,
+            text="Selecionar",
+            command=make_open_filter(row_key, label_text),
+            bg="#0f172a",
+            fg=TEXT_PRIMARY,
+            activebackground=ACCENT,
+            activeforeground="#0b1220",
+            relief="flat",
+            bd=0,
+            cursor="hand2",
+            padx=8,
+            pady=6,
+            font=("Segoe UI", 9, "bold"),
+        )
+        btn.grid(row=1, column=0, sticky="w", pady=(4, 0))
+        style_hover_button(btn, "#0f172a", "#1e293b")
+
+    summary_label = tk.Label(filter_row, text="Registros em tela: 0", bg=BG_SURFACE, fg=TEXT_SECONDARY, font=("Segoe UI", 9, "bold"))
+    summary_label.grid(row=1, column=0, columnspan=7, sticky="w", pady=(10, 0))
+
+    def refresh_tree() -> None:
+        for _, row_key in filter_specs:
+            filter_options[row_key] = sorted({str(row.get(row_key, "")) for row in raw_rows})
+            filter_labels[row_key].config(text=summarize_selected_values(filter_state[row_key]))
+        rows = raw_rows
+        for _, row_key in filter_specs:
+            if filter_state[row_key]:
+                rows = [row for row in rows if str(row.get(row_key, "")) in filter_state[row_key]]
+        current_rows.clear()
+        current_rows.extend(rows)
+        for item in tree.get_children():
+            tree.delete(item)
+        for row in rows:
+            tree.insert("", "end", values=tuple(row.get(column, "") for column in columns))
+        summary_label.config(text=f"Registros em tela: {len(rows)}")
+
+    def apply_filter(row_key: str, values: set[str]) -> None:
+        filter_state[row_key] = values
+        refresh_tree()
+
+    footer = tk.Frame(body, bg=BG_APP)
+    footer.grid(row=2, column=0, sticky="ew", pady=(10, 0))
+    footer.grid_columnconfigure(0, weight=1)
+    footer_buttons = tk.Frame(footer, bg=BG_APP)
+    footer_buttons.grid(row=0, column=0, sticky="e")
+
+    btn_export = tk.Button(
+        footer_buttons,
+        text="Exportar",
+        command=lambda: export_rows(current_rows, columns, modal),
+        bg="#1f3b2d",
+        fg=TEXT_PRIMARY,
+        activebackground="#2f5f45",
+        activeforeground=TEXT_PRIMARY,
+        relief="flat",
+        bd=0,
+        cursor="hand2",
+        padx=14,
+        pady=8,
+        font=("Segoe UI", 10, "bold"),
+    )
+    btn_export.pack(side="left", padx=(0, 8))
+    style_hover_button(btn_export, "#1f3b2d", "#2f5f45")
+
+    btn_close = tk.Button(
+        footer_buttons,
+        text="Fechar",
+        command=modal.destroy,
+        bg="#334155",
+        fg=TEXT_PRIMARY,
+        activebackground="#475569",
+        activeforeground=TEXT_PRIMARY,
+        relief="flat",
+        bd=0,
+        cursor="hand2",
+        padx=14,
+        pady=8,
+        font=("Segoe UI", 10, "bold"),
+    )
+    btn_close.pack(side="left")
+    style_hover_button(btn_close, "#334155", "#475569")
+
+    refresh_tree()
+    modal.wait_window()
+
+
+def show_cs_compara_fornec_modal(parent: tk.Tk) -> None:
+    modal, body, content = create_modal(parent, "Comparar Valores")
+
+    filter_row = tk.Frame(content, bg=BG_SURFACE)
+    filter_row.grid(row=0, column=0, sticky="ew", pady=(0, 10))
+    filter_row.grid_columnconfigure(1, weight=1)
+    filter_row.grid_columnconfigure(3, weight=1)
+
+    list_frame = tk.Frame(content, bg=BG_SURFACE)
+    list_frame.grid(row=1, column=0, sticky="nsew")
+    list_frame.grid_rowconfigure(0, weight=1)
+    list_frame.grid_columnconfigure(0, weight=1)
+
+    payload = database.fetch_cs_compara_fornec()
+    columns = tuple(str(col) for col in payload.get("columns", ()))
+    source_rows = list(payload.get("rows", []))
+    tree, _, _ = create_tree_with_scrollbars(list_frame, columns)
+    configure_tree_columns(tree, columns, {column: 150 for column in columns} | {"DESCRICAO": 320, "Contato": 240, "Nome": 180})
+
+    summary_label = tk.Label(body, text="Registros em tela: 0", bg=BG_APP, fg=TEXT_SECONDARY, font=("Segoe UI", 9, "bold"))
+    summary_label.grid(row=0, column=0, sticky="e", pady=(0, 6))
+
+    current_rows: list[dict[str, object]] = []
+    fornecedor_filter_state: set[str] = set()
+    representante_filter_state: set[str] = set()
+    available_fornecedores = sorted({str(row.get("Fornecedor", "")).strip() for row in source_rows if str(row.get("Fornecedor", "")).strip()})
+    available_representantes = sorted({str(row.get("Nome", "")).strip() for row in source_rows if str(row.get("Nome", "")).strip()})
+    filter_summaries: dict[str, tk.Label] = {}
+
+    for idx, (label_text, state_key, options) in enumerate(
+        (
+            ("Fornecedor", "fornecedor", available_fornecedores),
+            ("Representante", "representante", available_representantes),
+        )
+    ):
+        tk.Label(filter_row, text=label_text, bg=BG_SURFACE, fg=TEXT_PRIMARY, font=("Segoe UI", 10, "bold")).grid(
+            row=0, column=idx * 2, sticky="w", padx=(0, 8), pady=4
+        )
+        cell = tk.Frame(filter_row, bg=BG_SURFACE)
+        cell.grid(row=0, column=idx * 2 + 1, sticky="ew", padx=(0, 12), pady=4)
+        cell.grid_columnconfigure(0, weight=1)
+        summary = tk.Label(cell, text="Todos", bg=BG_SURFACE, fg=TEXT_SECONDARY, anchor="w", font=("Segoe UI", 9))
+        summary.grid(row=0, column=0, sticky="ew")
+        filter_summaries[state_key] = summary
+
+        def make_open_filter(title: str, state_name: str, available_options: list[str]) -> callable:
+            def open_filter() -> None:
+                selected_values = fornecedor_filter_state if state_name == "fornecedor" else representante_filter_state
+                open_multi_select_dialog(modal, f"Filtro: {title}", available_options, selected_values, lambda values: apply_filter(state_name, values))
+
+            return open_filter
+
+        btn = tk.Button(
+            cell,
+            text="Selecionar",
+            command=make_open_filter(label_text, state_key, options),
+            bg="#0f172a",
+            fg=TEXT_PRIMARY,
+            activebackground=ACCENT,
+            activeforeground="#0b1220",
+            relief="flat",
+            bd=0,
+            cursor="hand2",
+            padx=8,
+            pady=6,
+            font=("Segoe UI", 9, "bold"),
+        )
+        btn.grid(row=1, column=0, sticky="w", pady=(4, 0))
+        style_hover_button(btn, "#0f172a", "#1e293b")
+
+    def apply_filter(kind: str, values: set[str]) -> None:
+        nonlocal fornecedor_filter_state, representante_filter_state
+        if kind == "fornecedor":
+            fornecedor_filter_state = values
+        else:
+            representante_filter_state = values
+        refresh_tree()
+
+    def refresh_tree() -> None:
+        filtered_rows = source_rows
+        if fornecedor_filter_state:
+            filtered_rows = [row for row in filtered_rows if str(row.get("Fornecedor", "")).strip() in fornecedor_filter_state]
+        if representante_filter_state:
+            filtered_rows = [row for row in filtered_rows if str(row.get("Nome", "")).strip() in representante_filter_state]
+        current_rows.clear()
+        current_rows.extend(filtered_rows)
+        filter_summaries["fornecedor"].config(text=summarize_selected_values(fornecedor_filter_state))
+        filter_summaries["representante"].config(text=summarize_selected_values(representante_filter_state))
+        for item in tree.get_children():
+            tree.delete(item)
+        for row in filtered_rows:
+            tree.insert("", "end", values=tuple(row.get(column, "") for column in columns))
+        summary_label.config(text=f"Registros em tela: {len(filtered_rows)}")
+
+    footer = tk.Frame(body, bg=BG_APP)
+    footer.grid(row=2, column=0, sticky="ew", pady=(10, 0))
+    footer.grid_columnconfigure(0, weight=1)
+    footer_buttons = tk.Frame(footer, bg=BG_APP)
+    footer_buttons.grid(row=0, column=0, sticky="e")
+
+    btn_export = tk.Button(
+        footer_buttons,
+        text="Exportar",
+        command=lambda: export_rows(current_rows, columns, modal),
+        bg="#1f3b2d",
+        fg=TEXT_PRIMARY,
+        activebackground="#2f5f45",
+        activeforeground=TEXT_PRIMARY,
+        relief="flat",
+        bd=0,
+        cursor="hand2",
+        padx=14,
+        pady=8,
+        font=("Segoe UI", 10, "bold"),
+    )
+    btn_export.pack(side="left", padx=(0, 8))
+    style_hover_button(btn_export, "#1f3b2d", "#2f5f45")
+
+    btn_close = tk.Button(
+        footer_buttons,
+        text="Fechar",
+        command=modal.destroy,
+        bg="#334155",
+        fg=TEXT_PRIMARY,
+        activebackground="#475569",
+        activeforeground=TEXT_PRIMARY,
+        relief="flat",
+        bd=0,
+        cursor="hand2",
+        padx=14,
+        pady=8,
+        font=("Segoe UI", 10, "bold"),
+    )
+    btn_close.pack(side="left")
+    style_hover_button(btn_close, "#334155", "#475569")
+
+    refresh_tree()
+    modal.wait_window()
+
+
+def show_conexoes_modal(parent: tk.Tk) -> None:
+    modal, body, content = create_modal(parent, "Configurações de Conexão")
+    modal.geometry("860x430")
+    modal.minsize(860, 430)
+
+    form = tk.Frame(content, bg=BG_SURFACE)
+    form.grid(row=0, column=0, sticky="nsew")
+    form.grid_columnconfigure(1, weight=1)
+    form.grid_columnconfigure(3, weight=1)
+    form.grid_columnconfigure(5, weight=1)
+    form.grid_rowconfigure(3, weight=1)
+
+    current = database.get_sqlserver_connection_settings()
+
+    driver_var = tk.StringVar(value=str(current.get("driver", "")))
+    host_var = tk.StringVar(value=str(current.get("host", "")))
+    port_var = tk.StringVar(value=str(current.get("port", "")))
+    database_var = tk.StringVar(value=str(current.get("database", "")))
+    user_var = tk.StringVar(value=str(current.get("user", "")))
+    password_var = tk.StringVar(value=str(current.get("password", "")))
+    trust_var = tk.StringVar(value=str(current.get("trust_server_certificate", "yes")).lower())
+
+    fields = (
+        ("Driver ODBC", driver_var, 0, 0),
+        ("Servidor", host_var, 0, 2),
+        ("Porta", port_var, 0, 4),
+        ("Banco de Dados", database_var, 1, 0),
+        ("Usuário", user_var, 1, 2),
+    )
+
+    for label, var, row, col in fields:
+        tk.Label(
+            form,
+            text=label,
+            bg=BG_SURFACE,
+            fg=TEXT_PRIMARY,
+            font=("Segoe UI", 10, "bold"),
+        ).grid(row=row, column=col, sticky="w", padx=(0, 8), pady=4)
+        tk.Entry(
+            form,
+            textvariable=var,
+            bg="#0f172a",
+            fg=TEXT_PRIMARY,
+            insertbackground=TEXT_PRIMARY,
+            relief="flat",
+            font=("Segoe UI", 10),
+        ).grid(row=row, column=col + 1, sticky="ew", padx=(0, 12), pady=4, ipady=4)
+
+    tk.Label(
+        form,
+        text="Senha",
+        bg=BG_SURFACE,
+        fg=TEXT_PRIMARY,
+        font=("Segoe UI", 10, "bold"),
+    ).grid(row=2, column=0, sticky="w", padx=(0, 8), pady=4)
+
+    password_cell = tk.Frame(form, bg=BG_SURFACE)
+    password_cell.grid(row=2, column=1, columnspan=3, sticky="ew", padx=(0, 12), pady=4)
+    password_cell.grid_columnconfigure(0, weight=1)
+
+    entry_password = tk.Entry(
+        password_cell,
+        textvariable=password_var,
+        show="*",
+        bg="#0f172a",
+        fg=TEXT_PRIMARY,
+        insertbackground=TEXT_PRIMARY,
+        relief="flat",
+        font=("Segoe UI", 10),
+    )
+    entry_password.grid(row=0, column=0, sticky="ew", ipady=4)
+
+    btn_show_password = tk.Button(
+        password_cell,
+        text="Exibir Senha",
+        bg="#334155",
+        fg=TEXT_PRIMARY,
+        activebackground="#475569",
+        activeforeground=TEXT_PRIMARY,
+        relief="flat",
+        bd=0,
+        cursor="hand2",
+        padx=10,
+        pady=7,
+        font=("Segoe UI", 9, "bold"),
+    )
+    btn_show_password.grid(row=0, column=1, padx=(8, 0), sticky="e")
+    style_hover_button(btn_show_password, "#334155", "#475569")
+
+    def show_password(_event: object = None) -> None:
+        entry_password.config(show="")
+
+    def hide_password(_event: object = None) -> None:
+        entry_password.config(show="*")
+
+    btn_show_password.bind("<ButtonPress-1>", show_password)
+    btn_show_password.bind("<ButtonRelease-1>", hide_password)
+    btn_show_password.bind("<Leave>", hide_password)
+
+    tk.Label(
+        form,
+        text="TrustServerCertificate",
+        bg=BG_SURFACE,
+        fg=TEXT_PRIMARY,
+        font=("Segoe UI", 10, "bold"),
+    ).grid(row=2, column=4, sticky="w", padx=(0, 8), pady=4)
+
+    cmb_trust = ttk.Combobox(form, textvariable=trust_var, values=("yes", "no"), state="readonly")
+    cmb_trust.grid(row=2, column=5, sticky="ew", padx=(0, 12), pady=4, ipady=2)
+
+    hint = tk.Label(
+        form,
+        text="Exemplo: DRIVER=ODBC Driver 18 for SQL Server | Servidor=host ou IP | Porta=1433",
+        bg=BG_SURFACE,
+        fg=TEXT_SECONDARY,
+        anchor="w",
+        font=("Segoe UI", 9),
+    )
+    hint.grid(row=3, column=0, columnspan=6, sticky="sw", pady=(12, 0))
+
+    def validate() -> bool:
+        host = host_var.get().strip()
+        db_name = database_var.get().strip()
+        driver = driver_var.get().strip()
+        port = port_var.get().strip()
+        trust = trust_var.get().strip().lower()
+
+        if not driver:
+            messagebox.showerror("Dados inválidos", "Informe o Driver ODBC.", parent=modal)
+            return False
+        if not host:
+            messagebox.showerror("Dados inválidos", "Informe o Servidor.", parent=modal)
+            return False
+        if not db_name:
+            messagebox.showerror("Dados inválidos", "Informe o Banco de Dados.", parent=modal)
+            return False
+        if port and not port.isdigit():
+            messagebox.showerror("Dados inválidos", "Porta deve conter apenas números.", parent=modal)
+            return False
+        if trust not in ("yes", "no"):
+            messagebox.showerror("Dados inválidos", "TrustServerCertificate deve ser yes ou no.", parent=modal)
+            return False
+        return True
+
+    def format_diagnostics(diag: dict[str, object]) -> str:
+        drivers = diag.get("odbc_drivers", [])
+        if isinstance(drivers, list):
+            drivers_text = ", ".join(str(item) for item in drivers) if drivers else "(nenhum)"
+        else:
+            drivers_text = str(drivers)
+
+        lines = [
+            f"Executável empacotado: {'sim' if bool(diag.get('frozen')) else 'não'}",
+            f"Python/EXE: {diag.get('python_executable', '')}",
+            f"Pasta de dados: {diag.get('data_dir', '')}",
+            f"Arquivo DB: {diag.get('db_path', '')}",
+            f"Pasta gravável: {'sim' if bool(diag.get('data_dir_writable')) else 'não'}",
+            f"pyodbc instalado: {'sim' if bool(diag.get('pyodbc_installed')) else 'não'}",
+            f"Drivers ODBC: {drivers_text}",
+        ]
+
+        if diag.get("host"):
+            reachable = diag.get("host_port_reachable")
+            if reachable is True:
+                net_status = "sim"
+            elif reachable is False:
+                net_status = "não"
+            else:
+                net_status = "não testado"
+            lines.append(f"Host/porta acessível ({diag.get('host')}:{diag.get('port')}): {net_status}")
+
+        if diag.get("data_dir_error"):
+            lines.append(f"Erro pasta dados: {diag.get('data_dir_error')}")
+        if diag.get("pyodbc_error"):
+            lines.append(f"Erro pyodbc: {diag.get('pyodbc_error')}")
+        if diag.get("host_port_error"):
+            lines.append(f"Erro rede: {diag.get('host_port_error')}")
+
+        return "\n".join(lines)
+
+    def save_connection() -> None:
+        if not validate():
+            return
+        payload = {
+            "driver": driver_var.get().strip(),
+            "host": host_var.get().strip(),
+            "port": port_var.get().strip(),
+            "database": database_var.get().strip(),
+            "user": user_var.get().strip(),
+            "password": password_var.get(),
+            "trust_server_certificate": trust_var.get().strip().lower(),
+        }
+        try:
+            database.save_sqlserver_connection_settings(payload)
+            database.reset_legacy_adapter()
+        except Exception as exc:
+            messagebox.showerror("Erro ao salvar", str(exc), parent=modal)
+            return
+        messagebox.showinfo("Conexões", "Configuração de conexão salva com sucesso.", parent=modal)
+
+    def test_connection() -> None:
+        if not validate():
+            return
+        payload = {
+            "driver": driver_var.get().strip(),
+            "host": host_var.get().strip(),
+            "port": port_var.get().strip(),
+            "database": database_var.get().strip(),
+            "user": user_var.get().strip(),
+            "password": password_var.get(),
+            "trust_server_certificate": trust_var.get().strip().lower(),
+        }
+        diagnostics = database.get_sqlserver_runtime_diagnostics(payload["host"], payload["port"])
+        try:
+            installed_drivers = diagnostics.get("odbc_drivers", [])
+            if isinstance(installed_drivers, list):
+                resolved_driver = database.resolve_sqlserver_driver(payload["driver"], [str(item) for item in installed_drivers])
+                if not resolved_driver:
+                    raise RuntimeError(
+                        f"Driver ODBC '{payload['driver']}' não encontrado no Windows e nenhum driver SQL Server compatível foi localizado. "
+                        "Instale ODBC Driver 17/18 for SQL Server ou selecione um driver existente."
+                    )
+                payload["driver"] = resolved_driver
+                driver_var.set(resolved_driver)
+            database.save_sqlserver_connection_settings(payload)
+            database.reset_legacy_adapter()
+            database.fetch_legado_marcas()
+        except Exception as exc:
+            messagebox.showerror(
+                "Teste de conexão",
+                f"Falha ao conectar:\n{exc}\n\nDiagnóstico técnico:\n{format_diagnostics(diagnostics)}",
+                parent=modal,
+            )
+            return
+        messagebox.showinfo(
+            "Teste de conexão",
+            f"Conexão realizada com sucesso.\n\nDiagnóstico técnico:\n{format_diagnostics(diagnostics)}",
+            parent=modal,
+        )
+
+    footer = tk.Frame(body, bg=BG_APP)
+    footer.grid(row=2, column=0, sticky="ew", pady=(10, 0))
+    footer.grid_columnconfigure(0, weight=1)
+
+    buttons = tk.Frame(footer, bg=BG_APP)
+    buttons.grid(row=0, column=0, sticky="e")
+
+    btn_test = tk.Button(
+        buttons,
+        text="Testar Conexão",
+        command=test_connection,
+        bg="#1f3b2d",
+        fg=TEXT_PRIMARY,
+        activebackground="#2f5f45",
+        activeforeground=TEXT_PRIMARY,
+        relief="flat",
+        bd=0,
+        cursor="hand2",
+        padx=14,
+        pady=8,
+        font=("Segoe UI", 10, "bold"),
+    )
+    btn_test.pack(side="left", padx=(0, 8))
+    style_hover_button(btn_test, "#1f3b2d", "#2f5f45")
+
+    btn_save = tk.Button(
+        buttons,
+        text="Salvar",
+        command=save_connection,
+        bg="#0f172a",
+        fg=TEXT_PRIMARY,
+        activebackground=ACCENT,
+        activeforeground="#0b1220",
+        relief="flat",
+        bd=0,
+        cursor="hand2",
+        padx=14,
+        pady=8,
+        font=("Segoe UI", 10, "bold"),
+    )
+    btn_save.pack(side="left", padx=(0, 8))
+    style_hover_button(btn_save, "#0f172a", "#1e293b")
+
+    btn_close = tk.Button(
+        buttons,
+        text="Fechar",
+        command=modal.destroy,
+        bg="#334155",
+        fg=TEXT_PRIMARY,
+        activebackground="#475569",
+        activeforeground=TEXT_PRIMARY,
+        relief="flat",
+        bd=0,
+        cursor="hand2",
+        padx=14,
+        pady=8,
+        font=("Segoe UI", 10, "bold"),
+    )
+    btn_close.pack(side="left")
+    style_hover_button(btn_close, "#334155", "#475569")
+
     modal.wait_window()
 
 
@@ -1392,12 +2070,17 @@ def main() -> None:
         clear_frame(actions_body)
         card = tk.Frame(actions_body, bg="#172033", highlightthickness=1, highlightbackground="#334155")
         card.grid(row=0, column=0, sticky="nsew")
-        card.grid_columnconfigure(0, weight=1)
+        card.grid_columnconfigure(0, weight=0)
+        card.grid_columnconfigure(1, weight=1)
         card.grid_rowconfigure(0, weight=1)
+        card.grid_rowconfigure(1, weight=1)
         style_hover_frame(card, "#172033", BG_SURFACE_HOVER)
 
+        actions_list = tk.Frame(card, bg="#172033")
+        actions_list.grid(row=0, column=0, rowspan=2, sticky="nw", padx=12, pady=12)
+
         btn_relatorio_produtos = tk.Button(
-            card,
+            actions_list,
             text="Selecionar Produtos",
             command=lambda: show_relatorio_contatos_produtos_modal(root),
             bg="#0f172a",
@@ -1410,9 +2093,104 @@ def main() -> None:
             padx=10,
             pady=9,
             font=("Segoe UI", 10, "bold"),
+            width=20,
         )
-        btn_relatorio_produtos.grid(row=0, column=0, sticky="nw", padx=12, pady=12)
+        btn_relatorio_produtos.pack(fill="x", pady=(0, 10))
         style_hover_button(btn_relatorio_produtos, "#0f172a", "#1e293b")
+
+        btn_carregar_cotacoes = tk.Button(
+            actions_list,
+            text="Carregar Cotações",
+            command=lambda: show_cotacoes_captadas_modal(root),
+            bg="#0f172a",
+            fg=TEXT_PRIMARY,
+            activebackground=ACCENT,
+            activeforeground="#0b1220",
+            relief="flat",
+            bd=0,
+            cursor="hand2",
+            padx=10,
+            pady=9,
+            font=("Segoe UI", 10, "bold"),
+            width=20,
+        )
+        btn_carregar_cotacoes.pack(fill="x", pady=(0, 10))
+        style_hover_button(btn_carregar_cotacoes, "#0f172a", "#1e293b")
+
+        btn_cs_compara_01 = tk.Button(
+            actions_list,
+            text="Validação de Dados",
+            command=lambda: show_cs_compara_01_modal(root),
+            bg="#0f172a",
+            fg=TEXT_PRIMARY,
+            activebackground=ACCENT,
+            activeforeground="#0b1220",
+            relief="flat",
+            bd=0,
+            cursor="hand2",
+            padx=10,
+            pady=9,
+            font=("Segoe UI", 10, "bold"),
+            width=20,
+        )
+        btn_cs_compara_01.pack(fill="x", pady=(0, 10))
+        style_hover_button(btn_cs_compara_01, "#0f172a", "#1e293b")
+
+        btn_comparar_valores = tk.Button(
+            actions_list,
+            text="Comparar Valores",
+            command=lambda: show_cs_compara_fornec_modal(root),
+            bg="#0f172a",
+            fg=TEXT_PRIMARY,
+            activebackground=ACCENT,
+            activeforeground="#0b1220",
+            relief="flat",
+            bd=0,
+            cursor="hand2",
+            padx=10,
+            pady=9,
+            font=("Segoe UI", 10, "bold"),
+            width=20,
+        )
+        btn_comparar_valores.pack(fill="x")
+        style_hover_button(btn_comparar_valores, "#0f172a", "#1e293b")
+
+        settings_block = tk.Frame(
+            card,
+            bg="#0f172a",
+            highlightthickness=1,
+            highlightbackground="#334155",
+        )
+        settings_block.grid(row=1, column=1, sticky="se", padx=12, pady=12)
+
+        tk.Label(
+            settings_block,
+            text="Configurações",
+            bg="#0f172a",
+            fg=ACCENT,
+            anchor="w",
+            padx=10,
+            pady=8,
+            font=("Segoe UI", 10, "bold"),
+        ).pack(fill="x")
+
+        btn_conexoes = tk.Button(
+            settings_block,
+            text="Conexões",
+            command=lambda: show_conexoes_modal(root),
+            bg="#111827",
+            fg=TEXT_PRIMARY,
+            activebackground=ACCENT,
+            activeforeground="#0b1220",
+            relief="flat",
+            bd=0,
+            cursor="hand2",
+            padx=10,
+            pady=8,
+            font=("Segoe UI", 9, "bold"),
+        )
+        btn_conexoes.pack(fill="x", padx=8, pady=(0, 8))
+        style_hover_button(btn_conexoes, "#111827", "#1f2937")
 
     for text, cmd in (
         ("Fornecedores", lambda: show_fornecedores_modal(root)),
